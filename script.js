@@ -259,12 +259,46 @@ if (portal) {
   const enDias = n => n === 0 ? "Hoy" : n === 1 ? "Mañana" : n < 0 ? `Hace ${-n} días` : `En ${n} días`;
   let cli = null, code = "", idx = 0, timer = null;
 
-  function login(c) {
-    c = c.trim().toUpperCase().replace(/\s/g, "");
-    if (/^HV\d+$/.test(c)) c = "HV-" + c.slice(2);
-    const err = $("#loginErr");
-    if (!CLIENTES[c]) { err.textContent = "Código no encontrado. Revisa tu código o escríbenos por WhatsApp."; $("#codeIn").classList.add("error"); return; }
-    cli = CLIENTES[c]; code = c; idx = 0; err.textContent = "";
+  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fotoSrc = f => !f ? "" : f.startsWith("data:") ? f : foto(f, 700);
+
+  /* ---- Lee los datos: Firebase (si está configurado) → panel en modo demo → ejemplos ---- */
+  const CFG = window.FIREBASE_CONFIG || {};
+  const LIVE = CFG.apiKey && !CFG.apiKey.startsWith("PEGA");
+  const toD = s => { if (!s) return null; if (s instanceof Date) return s; const [y, mo, d] = String(s).slice(0, 10).split("-").map(Number); return new Date(y, mo - 1, d); };
+  function normal(c, mascotas) {   // convierte el formato del panel al de esta página
+    return { dueño: c.dueno || c.dueño || "", mascotas: mascotas.map(m => ({ ...m,
+      nac: toD(m.nac),
+      prox: m.prox && m.prox.fecha ? { ...m.prox, servicio: m.prox.detalle ? `${m.prox.servicio} · ${m.prox.detalle}` : m.prox.servicio, fecha: toD(m.prox.fecha) } : null,
+      vacunas: (m.vacunas || []).map(v => ({ ...v, ult: toD(v.ult), prox: toD(v.prox) })),
+      historial: (m.historial || []).map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f),
+      rec: (m.rec || []).map(r => ({ ...r, f: toD(r.f) })).filter(r => diff(r.f) >= -7).sort((a, b) => a.f - b.f) })) };
+  }
+  async function buscar(c) {
+    if (LIVE) {
+      const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+      const [app, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
+      const db = fs.getFirestore(app.getApps().length ? app.getApp() : app.initializeApp(CFG));
+      const s = await fs.getDoc(fs.doc(db, "clientes", c)); if (!s.exists()) return null;
+      const ms = await fs.getDocs(fs.collection(db, "clientes", c, "mascotas"));
+      return normal(s.data(), ms.docs.map(d => ({ id: d.id, ...d.data() })));
+    }
+    let local = null; try { local = JSON.parse(localStorage.getItem("hv_db")); } catch (e) {}
+    if (local && local.clientes && local.clientes[c]) { const x = local.clientes[c]; return normal(x, Object.entries(x.mascotas || {}).map(([id, m]) => ({ id, ...m }))); }
+    return CLIENTES[c] || null;
+  }
+
+  async function login(c) {
+    c = c.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (/^HV[A-Z0-9]+$/.test(c)) c = "HV-" + c.slice(2);
+    const err = $("#loginErr"), btn = $("#codeForm button");
+    err.textContent = ""; btn.disabled = true;
+    let r = null;
+    try { r = await buscar(c); } catch (e) { console.error(e); err.textContent = "No pudimos conectar. Revisa tu internet e intenta otra vez."; btn.disabled = false; return; }
+    btn.disabled = false;
+    if (!r) { err.textContent = "Código no encontrado. Revisa tu código o escríbenos por WhatsApp."; $("#codeIn").classList.add("error"); try { sessionStorage.removeItem("hv_code"); } catch (e) {} return; }
+    if (!r.mascotas.length) { err.textContent = "Tu código aún no tiene mascotas registradas. Consulta en la veterinaria."; return; }
+    cli = r; code = c; idx = 0;
     try { sessionStorage.setItem("hv_code", c); } catch (e) {}
     $("#login").style.display = "none"; $("#dash").classList.add("show");
     render(); window.scrollTo({ top: portal.offsetTop - 90, behavior: "smooth" });
@@ -275,48 +309,57 @@ if (portal) {
   }
   function render() {
     const m = cli.mascotas[idx];
-    $("#dHello").textContent = `Hola, ${cli.dueño.split(" ")[0]}`;
+    $("#dHello").textContent = `Hola, ${(cli.dueño || "").split(" ")[0]}`;
     $("#dCode").textContent = code;
-    $("#petTabs").innerHTML = cli.mascotas.length > 1 ? cli.mascotas.map((p, i) => `<button class="pet-tab ${i === idx ? "on" : ""}" data-i="${i}"><span class="av"><img src="${foto(p.foto, 120)}" alt="" onerror="this.remove()"></span>${p.nombre}</button>`).join("") : "";
+    $("#petTabs").innerHTML = cli.mascotas.length > 1 ? cli.mascotas.map((p, i) => `<button class="pet-tab ${i === idx ? "on" : ""}" data-i="${i}"><span class="av">${p.foto ? `<img src="${E(fotoSrc(p.foto))}" alt="" onerror="this.remove()">` : ""}</span>${E(p.nombre)}</button>`).join("") : "";
     const vencidas = m.vacunas.filter(v => diff(v.prox) < 0);
     $("#petCard").innerHTML = `
-      <div class="pet-photo"><img src="${foto(m.foto, 700)}" alt="Foto de ${m.nombre}" onerror="this.remove()"><span class="badge">${m.especie}</span></div>
-      <div class="pet-info"><h2>${m.nombre}</h2><span>${m.raza} · ${m.sexo}</span>
+      <div class="pet-photo">${m.foto ? `<img src="${E(fotoSrc(m.foto))}" alt="Foto de ${E(m.nombre)}" onerror="this.remove()">` : ""}<span class="badge">${E(m.especie)}</span></div>
+      <div class="pet-info"><h2>${E(m.nombre)}</h2><span>${E([m.raza, m.sexo].filter(Boolean).join(" · "))}</span>
         <div class="facts">
-          <div><small>Edad</small><b>${edad(m.nac)}</b></div><div><small>Peso</small><b>${m.peso}</b></div>
-          <div><small>Microchip</small><b>${m.chip}</b></div><div><small>Alergias</small><b>${m.alergias}</b></div>
+          <div><small>Edad</small><b>${m.nac ? edad(m.nac) : "—"}</b></div><div><small>Peso</small><b>${E(m.peso || "—")}</b></div>
+          <div><small>Microchip</small><b>${E(m.chip || "—")}</b></div><div><small>Alergias</small><b>${E(m.alergias || "—")}</b></div>
         </div>
-        ${vencidas.length ? `<div class="alert-box">${ic("alert")}<span><b>Vacuna vencida:</b> ${vencidas.map(v => v.n).join(", ")}. Agenda su refuerzo.</span></div>` : ""}
-      </div>`;
-    const pr = m.prox, d = pr.fecha;
-    $("#nextBox").innerHTML = `
-      <div><small>PRÓXIMA CITA · ${enDias(diff(d)).toUpperCase()}</small><h3>${pr.servicio}</h3>
-        <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${pr.hora} h</b><br>${pr.vet} · ${pr.sede}</p></div>
-      <div class="countdown" id="cd"></div>
-      <div class="next-actions">
-        <button class="btn btn-white" data-act="confirmar">Confirmar asistencia</button>
-        <button class="btn btn-glass" data-act="reprogramar">Reprogramar</button>
-        <a class="btn btn-glass" href="citas?codigo=${code}">Agendar otra cita</a>
+        ${vencidas.length ? `<div class="alert-box">${ic("alert")}<span><b>Vacuna vencida:</b> ${E(vencidas.map(v => v.n).join(", "))}. Agenda su refuerzo.</span></div>` : ""}
       </div>`;
     clearInterval(timer);
-    const [hh, mm] = pr.hora.split(":"); const target = new Date(d); target.setHours(+hh, +mm);
-    const tick = () => {
-      let s = Math.max(0, Math.floor((target - Date.now()) / 1000));
-      const D = Math.floor(s / 86400); s %= 86400; const H = Math.floor(s / 3600); s %= 3600; const M = Math.floor(s / 60);
-      $("#cd").innerHTML = `<div><b>${D}</b><span>días</span></div><div><b>${H}</b><span>horas</span></div><div><b>${M}</b><span>min</span></div>`;
-    };
-    tick(); timer = setInterval(tick, 30000);
-    $("#vacs").innerHTML = m.vacunas.map(v => { const n = diff(v.prox);
+    const pr = m.prox && diff(m.prox.fecha) >= 0 ? m.prox : null;
+    if (pr) {
+      const d = pr.fecha;
+      $("#nextBox").innerHTML = `
+        <div><small>PRÓXIMA CITA · ${enDias(diff(d)).toUpperCase()}</small><h3>${E(pr.servicio)}</h3>
+          <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${E(pr.hora)} h</b><br>${E([pr.vet, pr.sede].filter(Boolean).join(" · "))}</p></div>
+        <div class="countdown" id="cd"></div>
+        <div class="next-actions">
+          <button class="btn btn-white" data-act="confirmar">Confirmar asistencia</button>
+          <button class="btn btn-glass" data-act="reprogramar">Reprogramar</button>
+          <a class="btn btn-glass" href="citas?codigo=${code}">Agendar otra cita</a>
+        </div>`;
+      const [hh, mm] = (pr.hora || "00:00").split(":"); const target = new Date(d); target.setHours(+hh, +mm);
+      const tick = () => {
+        let s = Math.max(0, Math.floor((target - Date.now()) / 1000));
+        const D = Math.floor(s / 86400); s %= 86400; const H = Math.floor(s / 3600); s %= 3600; const M = Math.floor(s / 60);
+        $("#cd").innerHTML = `<div><b>${D}</b><span>días</span></div><div><b>${H}</b><span>horas</span></div><div><b>${M}</b><span>min</span></div>`;
+      };
+      tick(); timer = setInterval(tick, 30000);
+    } else {
+      $("#nextBox").innerHTML = `<div><small>PRÓXIMA CITA</small><h3>${E(m.nombre)} no tiene citas programadas</h3><p>Reserva su próximo control, baño o vacuna en menos de un minuto.</p></div>
+        <div class="next-actions"><a class="btn btn-white" href="citas?codigo=${code}">Reservar cita</a></div>`;
+    }
+    $("#vacs").innerHTML = m.vacunas.length ? m.vacunas.slice().sort((a, b) => a.prox - b.prox).map(v => { const n = diff(v.prox);
       const st = n < 0 ? `<span class="st bad">Vencida</span>` : n <= 30 ? `<span class="st warn">Vence ${enDias(n).toLowerCase()}</span>` : `<span class="st ok">Al día</span>`;
-      return `<div class="vac"><div><b>${v.n}</b><small>Aplicada: ${fmt(v.ult)} · Próxima: ${fmt(v.prox)}</small></div>${st}</div>`; }).join("");
-    $("#timeline").innerHTML = `<li class="upcoming"><span class="t-date">${fmt(d)} · ${pr.hora} h · Programada</span><b>${pr.servicio}</b><span class="vet">${pr.vet}</span></li>` +
-      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}</span><b>${h.t}</b><p>${h.d}</p><span class="vet">${h.vet}</span></li>`).join("");
-    $("#rems").innerHTML = m.rec.map(r => `<div class="rem"><i>${ic(r.i)}</i><b>${r.t}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("");
+      return `<div class="vac"><div><b>${E(v.n)}</b><small>Aplicada: ${fmt(v.ult)} · Próxima: ${fmt(v.prox)}</small></div>${st}</div>`; }).join("")
+      : `<p style="color:var(--muted)">Aún no hay vacunas registradas.</p>`;
+    $("#timeline").innerHTML = (pr ? `<li class="upcoming"><span class="t-date">${fmt(pr.fecha)} · ${E(pr.hora)} h · Programada</span><b>${E(pr.servicio)}</b><span class="vet">${E(pr.vet || "")}</span></li>` : "") +
+      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}</span><b>${E(h.t)}</b>${h.d ? `<p>${E(h.d)}</p>` : ""}<span class="vet">${E(h.vet || "")}</span></li>`).join("")
+      || `<p style="color:var(--muted)">Aún no hay atenciones registradas.</p>`;
+    $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(R_ICO[r.i] ? r.i : "pill")}</i><b>${E(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
+      : `<p style="color:var(--muted)">Sin recordatorios por ahora.</p>`;
   }
   portal.addEventListener("click", e => {
     const t = e.target.closest("[data-i]"); if (t) { idx = +t.dataset.i; render(); }
     const a = e.target.closest("[data-act]"); if (!a) return;
-    const m = cli.mascotas[idx], pr = m.prox;
+    const m = cli.mascotas[idx], pr = m.prox; if (!pr) return;
     const base = `${pr.servicio} de ${m.nombre} el ${fmt(pr.fecha)} a las ${pr.hora} h (código ${code})`;
     if (a.dataset.act === "confirmar") wa(`Hola Huellitas, confirmo la cita: ${base}. ¡Gracias!`);
     if (a.dataset.act === "reprogramar") wa(`Hola Huellitas, necesito reprogramar la cita: ${base}. ¿Qué otros horarios tienen?`);
