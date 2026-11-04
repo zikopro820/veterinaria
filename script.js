@@ -1,14 +1,21 @@
 /* =========================================================
    HUELLITAS — Funciones del sitio
+   Los productos, servicios, WhatsApp, dirección y horarios se
+   editan desde el PANEL (si Firebase está conectado) o en datos.js.
    ========================================================= */
-const WHATSAPP = "51987654321";   // ← cambia por el WhatsApp real (51 + número)
-const DELIVERY = 10;              // costo de delivery en S/ (0 = gratis)
-const DELIVERY_GRATIS_DESDE = 150;
+const D0 = window.DATOS || { ajustes: {}, servicios: [], productos: [], iconos: {} };
+let AJ = { ...D0.ajustes };
+let WHATSAPP = AJ.whatsapp || "51987654321";
+const FB_CFG = window.FIREBASE_CONFIG || {};
+const EN_VIVO = !!FB_CFG.apiKey && !FB_CFG.apiKey.startsWith("PEGA");
+const FB_V = "10.12.2";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const soles = n => "S/ " + n.toFixed(2);
-const foto = (img, w = 600) => img.startsWith("http") ? img : `https://images.unsplash.com/photo-${img}?auto=format&fit=crop&w=${w}&q=80`;
+const soles = n => "S/ " + (+n).toFixed(2);
+const precio = n => !+n ? "Consultar" : "S/ " + (Number.isInteger(+n) ? +n : (+n).toFixed(2));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const foto = (img, w = 600) => !img ? "" : (img.startsWith("http") || img.startsWith("data:")) ? img : `https://images.unsplash.com/photo-${img}?auto=format&fit=crop&w=${w}&q=80`;
 const wa = txt => window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(txt), "_blank");
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } },
@@ -19,16 +26,21 @@ const ICO = {
   check: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
   bag: '<svg class="ico" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg>',
   paw: '<svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><path d="M8 14c0-2 1.8-4 4-4s4 2 4 4c0 1.5 2 2.5 2 4.5S16.5 22 15 22c-1.2 0-2-.8-3-.8s-1.8.8-3 .8c-1.5 0-3-1.5-3-3.5S8 15.5 8 14z"/></svg>',
+  arrow: '<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
 };
+const icono = k => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${(D0.iconos || {})[k] || (D0.iconos || {}).paw || ""}</svg>`;
 
 /* ---------- Menú y animaciones ---------- */
 const menu = $("#menu"), burger = $("#hamburger");
 if (menu && burger) burger.addEventListener("click", () => burger.setAttribute("aria-expanded", menu.classList.toggle("open")));
-if ("IntersectionObserver" in window) {
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); } }), { threshold: .08 });
-  $$(".reveal").forEach(el => io.observe(el));
-} else $$(".reveal").forEach(el => el.classList.add("visible"));
-$$(".wa-link").forEach(a => a.href = "https://wa.me/" + WHATSAPP);
+let io = null;
+function revealAll(root = document) {
+  if (!io) { $$(".reveal", root).forEach(el => el.classList.add("visible")); return; }
+  $$(".reveal:not(.visible)", root).forEach(el => io.observe(el));
+}
+if ("IntersectionObserver" in window) io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); } }), { threshold: .08 });
+revealAll();
+if (EN_VIVO) $$(".demo-only").forEach(el => el.remove());
 
 function toast(t) {
   let el = $(".toast");
@@ -38,37 +50,110 @@ function toast(t) {
 }
 
 /* =========================================================
-   CARRITO
+   DATOS: Firebase → panel en modo demo (mismo navegador) → datos.js
    ========================================================= */
-let cart = store.get("hv_cart", []);
-const P = id => (typeof PRODUCTOS !== "undefined" ? PRODUCTOS : []).find(p => p.id === id);
+const ordenar = l => l.slice().sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || String(a.n).localeCompare(String(b.n)));
+let DATA = null;
+async function cargarDatos() {
+  if (DATA) return DATA;
+  let prod = null, serv = null, aj = null;
+  try {
+    if (EN_VIVO) {
+      let cache = null; try { cache = JSON.parse(sessionStorage.getItem("hv_cache")); } catch (e) {}
+      if (cache && Date.now() - cache.t < 5 * 60 * 1000) ({ prod, serv, aj } = cache);
+      else {
+        const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
+        const [app, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
+        const db = fs.getFirestore(app.getApps().length ? app.getApp() : app.initializeApp(FB_CFG));
+        const [p, s, a] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")), fs.getDoc(fs.doc(db, "ajustes", "general"))]);
+        prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id })); aj = a.exists() ? a.data() : null;
+        try { sessionStorage.setItem("hv_cache", JSON.stringify({ t: Date.now(), prod, serv, aj })); } catch (e) {}
+      }
+    } else {
+      const local = store.get("hv_db", null);   // datos del panel en MODO DEMO (mismo navegador)
+      if (local) {
+        if (local.productos) prod = Object.entries(local.productos).map(([id, x]) => ({ ...x, id }));
+        if (local.servicios) serv = Object.entries(local.servicios).map(([id, x]) => ({ ...x, id }));
+        if (local.ajustes) aj = local.ajustes;
+      }
+    }
+  } catch (e) { console.warn("No se pudieron leer los datos; se usan los de ejemplo.", e); }
+  // Si la base está vacía se muestran los datos de ejemplo (datos.js)
+  DATA = {
+    productos: ordenar(prod && prod.length ? prod : D0.productos).filter(x => x.visible !== false),
+    servicios: ordenar(serv && serv.length ? serv : D0.servicios).filter(x => x.visible !== false),
+    ajustes: { ...D0.ajustes, ...(aj || {}) },
+  };
+  return DATA;
+}
+
+/* ---------- Ajustes: WhatsApp, dirección, horarios ---------- */
+function aplicarAjustes(a) {
+  AJ = a; WHATSAPP = String(a.whatsapp || WHATSAPP).replace(/\D/g, "");
+  $$(".wa-link").forEach(x => x.href = "https://wa.me/" + WHATSAPP);
+  const t = {
+    telefono: a.telefono, direccion: a.direccion, correo: a.correo,
+    horario: `Lun a Sáb ${a.abre} – ${a.cierra} · Dom ` + (a.domingoCierra ? `${a.abre} – ${a.domingoCierra}` : "cerrado"),
+    horarioLS: `${a.abre} – ${a.cierra}`, horarioDom: a.domingoCierra ? `${a.abre} – ${a.domingoCierra}` : "Cerrado",
+    deliveryTxt: +a.deliveryGratis ? `Delivery gratis desde S/ ${a.deliveryGratis}` : "Delivery a todo Lima",
+  };
+  $$("[data-aj]").forEach(x => { const v = t[x.dataset.aj]; if (v != null && v !== "") x.textContent = v; });
+  const m = $("#mapa"); if (m && a.direccion) { const src = "https://www.google.com/maps?q=" + encodeURIComponent(a.direccion) + "&output=embed"; if (m.src !== src) m.src = src; }
+}
+
+/* =========================================================
+   SERVICIOS
+   ========================================================= */
+function svcCard(x) {
+  return `<article class="svc reveal">
+    <div class="svc-img">${x.img ? `<img src="${esc(foto(x.img, 700))}" alt="${esc(x.n)}" loading="lazy" onerror="this.remove()">` : ""}<span class="ic">${icono(x.icon)}</span></div>
+    <div class="svc-body"><h3>${esc(x.n)}</h3><p>${esc(x.d)}</p>
+      <div class="svc-foot"><div class="price"><small>${+x.p ? "Desde" : "Precio"}</small><b>${precio(x.p)}</b></div>
+      ${x.reservable !== false ? `<a href="citas?servicio=${encodeURIComponent(x.id)}" class="btn btn-light btn-sm">Reservar ${ICO.arrow}</a>` : `<a href="contacto" class="btn btn-light btn-sm">Consultar ${ICO.arrow}</a>`}</div>
+    </div></article>`;
+}
+function pintarServicios(list) {
+  const main = $$("#svcMain"), mini = $("#svcMini");
+  main.forEach(el => { const lim = +el.dataset.limit || 99; el.innerHTML = list.filter(x => x.tipo !== "adicional").slice(0, lim).map(svcCard).join(""); revealAll(el); });
+  if (mini) { mini.innerHTML = list.filter(x => x.tipo === "adicional").map(x => `<div class="svc-mini reveal"><i>${icono(x.icon)}</i><div><b>${esc(x.n)}</b><span>${esc(x.d)}${+x.p ? " · desde " + precio(x.p) : ""}</span></div></div>`).join(""); revealAll(mini); }
+}
+
+/* =========================================================
+   CARRITO Y TIENDA
+   ========================================================= */
+let PRODS = [];
+let cart = store.get("hv_cart", []).map(i => ({ ...i, id: String(i.id) }));
+const P = id => PRODS.find(p => String(p.id) === String(id));
+const disponible = p => p && p.stock !== "agotado";
 function saveCart() { store.set("hv_cart", cart); drawCart(); }
 function addToCart(id) {
-  const it = cart.find(i => i.id === id);
-  it ? it.q++ : cart.push({ id, q: 1 });
+  if (!disponible(P(id))) return toast("Producto agotado");
+  const it = cart.find(i => i.id === String(id));
+  it ? it.q++ : cart.push({ id: String(id), q: 1 });
   saveCart(); toast("Agregado al carrito");
 }
 function drawCart() {
+  cart = cart.filter(i => disponible(P(i.id)));
   const n = cart.reduce((a, i) => a + i.q, 0);
   $$(".cart-count").forEach(c => { c.textContent = n || ""; c.dataset.n = n; });
   const box = $("#cartItems"); if (!box) return;
-  cart = cart.filter(i => P(i.id));
   if (!cart.length) {
     box.innerHTML = `<div class="cart-empty">${ICO.bag}<b>Tu carrito está vacío</b><p>Agrega alimento, accesorios o medicamentos para tu mascota.</p></div>`;
     $("#cartFoot").style.display = "none"; return;
   }
   $("#cartFoot").style.display = "";
   box.innerHTML = cart.map(i => { const p = P(i.id); return `
-    <div class="ci"><div class="ci-img"><img src="${foto(p.img, 160)}" alt="${p.n}"></div>
-      <div class="ci-info"><b>${p.n}</b><small>${soles(p.p)} c/u</small></div>
-      <div class="qty"><button data-q="-1" data-id="${p.id}" aria-label="Quitar uno">−</button><span>${i.q}</span><button data-q="1" data-id="${p.id}" aria-label="Agregar uno">+</button></div>
+    <div class="ci"><div class="ci-img">${p.img ? `<img src="${esc(foto(p.img, 160))}" alt="">` : ""}</div>
+      <div class="ci-info"><b>${esc(p.n)}</b><small>${soles(p.p)} c/u</small></div>
+      <div class="qty"><button data-q="-1" data-id="${esc(p.id)}" aria-label="Quitar uno">−</button><span>${i.q}</span><button data-q="1" data-id="${esc(p.id)}" aria-label="Agregar uno">+</button></div>
     </div>`; }).join("");
   const sub = cart.reduce((a, i) => a + P(i.id).p * i.q, 0);
-  const del = $("input[name=entrega]:checked")?.value === "Delivery" ? (sub >= DELIVERY_GRATIS_DESDE ? 0 : DELIVERY) : 0;
+  const gratis = +AJ.deliveryGratis || 0, costo = +AJ.delivery || 0;
+  const del = $("input[name=entrega]:checked")?.value === "Delivery" ? (gratis && sub >= gratis ? 0 : costo) : 0;
   $("#cSub").textContent = soles(sub);
   $("#cDel").textContent = del ? soles(del) : "Gratis";
   $("#cTot").textContent = soles(sub + del);
-  $("#cHint").textContent = sub < DELIVERY_GRATIS_DESDE ? `Te faltan ${soles(DELIVERY_GRATIS_DESDE - sub)} para delivery gratis` : "¡Tienes delivery gratis!";
+  $("#cHint").textContent = !gratis ? "" : sub < gratis ? `Te faltan ${soles(gratis - sub)} para delivery gratis` : "¡Tienes delivery gratis!";
 }
 const panel = $("#cart");
 if (panel) {
@@ -76,7 +161,7 @@ if (panel) {
   $$("[data-close]", panel).forEach(b => b.addEventListener("click", () => panel.classList.remove("open")));
   $("#cartItems").addEventListener("click", e => {
     const b = e.target.closest("[data-q]"); if (!b) return;
-    const it = cart.find(i => i.id === +b.dataset.id); it.q += +b.dataset.q;
+    const it = cart.find(i => i.id === b.dataset.id); it.q += +b.dataset.q;
     if (it.q <= 0) cart = cart.filter(i => i !== it);
     saveCart();
   });
@@ -86,41 +171,41 @@ if (panel) {
     [name, addr].forEach(x => x.classList.remove("error"));
     if (!name.value.trim()) { name.classList.add("error"); name.focus(); return; }
     if (ent === "Delivery" && !addr.value.trim()) { addr.classList.add("error"); addr.focus(); return; }
-    const lines = ["Hola Huellitas, quiero hacer este pedido:", ""];
+    const lines = ["Hola, quiero hacer este pedido:", ""];
     cart.forEach(i => { const p = P(i.id); lines.push(`• ${i.q} x ${p.n} — ${soles(p.p * i.q)}`); });
     lines.push("", `Subtotal: ${$("#cSub").textContent}`, `Entrega: ${ent}${ent === "Delivery" ? " (" + $("#cDel").textContent + ")" : ""}`, `*Total: ${$("#cTot").textContent}*`, "", "Nombre: " + name.value.trim());
     if (ent === "Delivery") lines.push("Dirección: " + addr.value.trim());
     wa(lines.join("\n"));
   });
 }
-drawCart();
 
-/* ---------- Tarjetas de producto ---------- */
 const GRAD = ["#c9bcff,#ffc7b8", "#b8ecd7,#c9bcff", "#ffd9a8,#ffb8a8", "#bfe3ff,#d8c9ff"];
+const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 9973; return h; };
 function card(p) {
-  return `<article class="prod">
-    ${p.tag ? `<span class="tag ${p.tag === "Nuevo" ? "new" : p.tag === "Recomendado" ? "vet" : ""}">${p.tag === "Recomendado" ? "Recomendado por el vet" : p.tag}</span>` : ""}
-    <div class="prod-img" style="background:linear-gradient(135deg,${GRAD[p.id % 4]})"><span class="ph">${ICO.paw}</span>
-      <img src="${foto(p.img)}" alt="${p.n}" loading="lazy" onerror="this.remove()"></div>
-    <div class="prod-body"><span class="cat">${p.cat} · ${p.esp === "ambos" ? "Perro y gato" : p.esp === "perro" ? "Perro" : "Gato"}</span>
-      <h3>${p.n}</h3><p class="desc">${p.d}</p>
-      <div class="prod-foot"><div class="p"><b>${soles(p.p)}</b>${p.old ? `<s>${soles(p.old)}</s>` : ""}</div>
-        <button class="add" data-add="${p.id}" aria-label="Agregar ${p.n} al carrito">${ICO.plus}</button></div>
+  const ag = !disponible(p);
+  const tag = ag ? `<span class="tag out">Agotado</span>` : p.tag ? `<span class="tag ${p.tag === "Nuevo" ? "new" : p.tag === "Recomendado" ? "vet" : ""}">${p.tag === "Recomendado" ? "Recomendado por el vet" : esc(p.tag)}</span>` : "";
+  return `<article class="prod${ag ? " sold" : ""}">${tag}
+    <div class="prod-img" style="background:linear-gradient(135deg,${GRAD[hash(p.id) % 4]})"><span class="ph">${ICO.paw}</span>
+      ${p.img ? `<img src="${esc(foto(p.img))}" alt="${esc(p.n)}" loading="lazy" onerror="this.remove()">` : ""}</div>
+    <div class="prod-body"><span class="cat">${esc(p.cat)} · ${p.esp === "ambos" ? "Perro y gato" : p.esp === "perro" ? "Perro" : "Gato"}</span>
+      <h3>${esc(p.n)}</h3><p class="desc">${esc(p.d)}</p>
+      <div class="prod-foot"><div class="p"><b>${soles(p.p)}</b>${+p.old > +p.p ? `<s>${soles(p.old)}</s>` : ""}</div>
+        <button class="add" data-add="${esc(p.id)}" aria-label="Agregar ${esc(p.n)} al carrito" ${ag ? "disabled" : ""}>${ICO.plus}</button></div>
     </div></article>`;
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-add]"); if (!b) return;
-  addToCart(+b.dataset.add); b.classList.add("done"); b.innerHTML = ICO.check;
+  const b = e.target.closest("[data-add]"); if (!b || b.disabled) return;
+  addToCart(b.dataset.add); b.classList.add("done"); b.innerHTML = ICO.check;
   setTimeout(() => { b.classList.remove("done"); b.innerHTML = ICO.plus; }, 1200);
 });
-const feat = $("#featured");
-if (feat && typeof PRODUCTOS !== "undefined") feat.innerHTML = PRODUCTOS.filter(p => p.tag).slice(0, 4).map(card).join("");
-
-const grid = $("#shopGrid");
-if (grid && typeof PRODUCTOS !== "undefined") {
+function pintarTienda() {
+  const feat = $("#featured");
+  if (feat) { const d = PRODS.filter(p => p.destacado && disponible(p)); feat.innerHTML = (d.length ? d : PRODS.filter(disponible)).slice(0, 4).map(card).join(""); }
+  const grid = $("#shopGrid"); if (!grid) return;
   let fCat = "Todos", fEsp = "todos", q = "";
   const draw = () => {
-    const list = PRODUCTOS.filter(p => (fCat === "Todos" || p.cat === fCat) && (fEsp === "todos" || p.esp === fEsp || p.esp === "ambos") && (p.n + " " + p.d).toLowerCase().includes(q));
+    const list = PRODS.filter(p => (fCat === "Todos" || p.cat === fCat) && (fEsp === "todos" || p.esp === fEsp || p.esp === "ambos") && (p.n + " " + (p.d || "")).toLowerCase().includes(q))
+      .sort((a, b) => disponible(b) - disponible(a));
     grid.innerHTML = list.length ? list.map(card).join("") : `<p class="empty">No encontramos productos con ese filtro. Escríbenos por WhatsApp y te lo conseguimos.</p>`;
     $("#shopCount").textContent = list.length + (list.length === 1 ? " producto" : " productos");
   };
@@ -134,29 +219,33 @@ if (grid && typeof PRODUCTOS !== "undefined") {
 /* =========================================================
    RESERVA DE CITAS
    ========================================================= */
-const book = $("#bookForm");
-if (book) {
+function iniciarCitas(servicios) {
+  const book = $("#bookForm"); if (!book) return;
+  const opts = $("#svcOpts"), res = servicios.filter(x => x.reservable !== false);
+  if (opts && res.length) opts.innerHTML = res.map((x, i) => `<label class="opt"><input type="radio" name="servicio" value="${esc(x.n)}" data-key="${esc(x.id)}" data-price="${+x.p ? "Desde " + precio(x.p) : "Consultar"}" required${i === 0 ? " checked" : ""}><span>${icono(x.icon)}${esc(x.n)}<small>${+x.p ? "desde " + precio(x.p) : "a consultar"}</small></span></label>`).join("");
   const dateIn = $("[name=fecha]", book), slotsBox = $("#slots");
   const pad = n => String(n).padStart(2, "0");
   const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const today = new Date(); dateIn.min = iso(today);
+  dateIn.min = iso(new Date());
   const max = new Date(); max.setDate(max.getDate() + 45); dateIn.max = iso(max);
   let slot = "";
   const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const nice = s => { const d = new Date(s + "T12:00"); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
-  // Demo: algunos horarios aparecen ocupados (en la versión real vienen de la base de datos)
+  const min = t => { const [h, m] = String(t || "0:00").split(":").map(Number); return h * 60 + (m || 0); };
+  // Demo: algunos horarios aparecen ocupados (en la versión real vendrían de la agenda del panel)
   const busy = (s, h) => { let x = 0; for (const c of s + h) x = (x * 31 + c.charCodeAt(0)) % 997; return x % 3 === 0; };
   function drawSlots() {
     slot = ""; updateSum();
     if (!dateIn.value) { slotsBox.innerHTML = `<p class="slots-msg">Primero elige una fecha para ver los horarios disponibles.</p>`; return; }
     const d = new Date(dateIn.value + "T12:00"), sun = d.getDay() === 0;
-    const hours = []; for (let h = 9; h < (sun ? 13 : 19); h++) hours.push(pad(h) + ":00", pad(h) + ":30");
+    if (sun && !AJ.domingoCierra) { slotsBox.innerHTML = `<p class="slots-msg">Los domingos no atendemos citas. Para emergencias escríbenos por WhatsApp.</p>`; return; }
+    const hours = []; for (let t = min(AJ.abre); t + 30 <= min(sun ? AJ.domingoCierra : AJ.cierra); t += 30) hours.push(pad(Math.floor(t / 60)) + ":" + pad(t % 60));
     const now = new Date(), isToday = dateIn.value === iso(now);
     slotsBox.innerHTML = hours.map(h => {
-      const past = isToday && (+h.slice(0, 2) * 60 + +h.slice(3)) <= now.getHours() * 60 + now.getMinutes() + 30;
+      const past = isToday && min(h) <= now.getHours() * 60 + now.getMinutes() + 30;
       return `<button type="button" class="slot" data-h="${h}" ${past || busy(dateIn.value, h) ? "disabled" : ""}>${h}</button>`;
-    }).join("") + (sun ? `<p class="slots-msg">Domingos atendemos de 9:00 a 13:00. Emergencias las 24 horas.</p>` : "");
+    }).join("") + (sun ? `<p class="slots-msg">Domingos atendemos de ${esc(AJ.abre)} a ${esc(AJ.domingoCierra)}. Emergencias las 24 horas.</p>` : "");
   }
   slotsBox.addEventListener("click", e => {
     const b = e.target.closest(".slot"); if (!b || b.disabled) return;
@@ -173,7 +262,7 @@ if (book) {
   }
   book.addEventListener("input", updateSum); book.addEventListener("change", updateSum);
   const ps = new URLSearchParams(location.search);
-  if (ps.get("servicio")) { const r = $(`input[name=servicio][data-key="${ps.get("servicio")}"]`, book); if (r) r.checked = true; }
+  if (ps.get("servicio")) { const r = $$("input[name=servicio]", book).find(x => x.dataset.key === ps.get("servicio")); if (r) r.checked = true; }
   if (ps.get("codigo")) $("[name=codigo]", book).value = ps.get("codigo").toUpperCase();
   drawSlots();
 
@@ -191,7 +280,7 @@ if (book) {
       (bad[0].focus ? bad[0] : slotsBox).focus?.(); return;
     }
     const v = n => ($(`[name="${n}"]`, book)?.value || "").trim();
-    const lines = ["Hola Huellitas, quiero reservar una cita:", "",
+    const lines = ["Hola, quiero reservar una cita:", "",
       "• Servicio: " + $("input[name=servicio]:checked", book).value,
       "• Fecha: " + nice(dateIn.value), "• Hora: " + slot, "",
       "• Mascota: " + v("mascota") + " (" + $("input[name=especie]:checked", book).value + ")"];
@@ -204,6 +293,15 @@ if (book) {
     msg.textContent = "¡Listo! Se abrió WhatsApp con tu reserva. Envía el mensaje y te confirmamos en minutos.";
   });
 }
+
+/* ---------- Arranque ---------- */
+aplicarAjustes(AJ);
+cargarDatos().then(d => {
+  aplicarAjustes(d.ajustes);
+  PRODS = d.productos; drawCart(); pintarTienda();
+  pintarServicios(d.servicios);
+  iniciarCitas(d.servicios);
+});
 
 /* =========================================================
    PORTAL MI MASCOTA

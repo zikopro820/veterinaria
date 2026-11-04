@@ -515,3 +515,9 @@ footer .brand small { color: #8f8aae; }
   .next { background: #fff !important; color: #000 !important; border: 1px solid #ccc; }
   .card { break-inside: avoid; }
 }
+
+/* ---------- Producto agotado ---------- */
+.tag.out { background: #6b6884; }
+.prod.sold .prod-img img { filter: grayscale(1); opacity: .6; }
+.prod.sold .prod-foot .p b { color: #a5a2bb; }
+.add:disabled { background: #d9d6e8; cursor: not-allowed; transform: none; }

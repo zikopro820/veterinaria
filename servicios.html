@@ -11,15 +11,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="firebase-config.js"></script>
+  <script src="datos.js"></script>
   <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="demo-note">Sitio de demostración creado por <a href="https://ziko.pro" target="_blank" rel="noopener"><b>ziko.pro</b></a> · Los datos y precios son de ejemplo.</div>
+  <div class="demo-note demo-only">Sitio de demostración creado por <a href="https://ziko.pro" target="_blank" rel="noopener"><b>ziko.pro</b></a> · Los datos y precios son de ejemplo.</div>
   <div class="topbar">
     <div class="container">
-      <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#">+51 987 654 321</a></span>
-      <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span>
-      <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> Delivery gratis desde S/ 150</span>
+      <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
+      <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-aj="horario">Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span></span>
+      <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span data-aj="deliveryTxt">Delivery gratis desde S/ 150</span></span>
     </div>
   </div>
   <header>
@@ -52,7 +54,7 @@
 
   <section>
     <div class="container">
-      <div class="services">
+      <div class="services" id="svcMain" data-limit="6">
         <article class="svc reveal">
           <div class="svc-img"><img src="https://images.unsplash.com/photo-1770836037793-95bdbf190f71?auto=format&fit=crop&w=700&q=80" alt="Consulta general" loading="lazy" onerror="this.remove()"><span class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3"/><circle cx="20" cy="12" r="2"/></svg></span></div>
           <div class="svc-body"><h3>Consulta general</h3><p>Evaluación completa, diagnóstico y tratamiento con veterinarios colegiados.</p>
@@ -95,12 +97,12 @@
   <section class="bg-soft">
     <div class="container">
       <div class="sec-head center reveal"><span class="pill coral"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg> Y además</span><h2>Más servicios para <span class="c-pri">cada etapa</span></h2></div>
-      <div class="svc-icons">
+      <div class="svc-icons" id="svcMini">
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7z"/><path d="M8.5 8.5l7 7"/></svg></i><div><b>Desparasitación</b><span>Interna y externa · desde S/ 25</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 6v12M8 9h8M8 12h8M9 15h6"/></svg></i><div><b>Ecografía y rayos X</b><span>Diagnóstico por imagen · desde S/ 90</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg></i><div><b>Hospitalización</b><span>Cuidado 24 h con reporte diario</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></i><div><b>Atención a domicilio</b><span>Vamos a tu casa · desde S/ 80</span></div></div>
-        <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></i><div><b>Microchip</b><span>Identificación permanente · S/ 70</span></div></div>
+        <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></i><div><b>Microchip</b><span>Identificación permanente · desde S/ 70</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><b>Emergencias 24/7</b><span>Siempre hay un veterinario de turno</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg></i><div><b>Geriatría</b><span>Chequeos para mascotas mayores</span></div></div>
         <div class="svc-mini reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 16a3 3 0 0 1 2.2 5H8.8A3 3 0 0 1 11 16M7 14c-1.3-3.3-.8-7.7 1-10 1.2 2 1.5 4.6 1.3 7M17 14c1.3-3.3.8-7.7-1-10-1.2 2-1.5 4.6-1.3 7"/><circle cx="12" cy="14" r="5"/></svg></i><div><b>Animales exóticos</b><span>Conejos, cuyes, aves y hámsters</span></div></div>
@@ -112,7 +114,7 @@
 
       <div class="emergency reveal">
         <div class="e-l"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><h3>¿Tu mascota tiene una emergencia?</h3><p>Atendemos las 24 horas, los 365 días. Llámanos o escríbenos y te guiamos mientras llegas.</p></div></div>
-        <a class="btn wa-link" href="#"><svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5 2.5 1 3 .8 3.6.8.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 12 21.8zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg> Emergencia: +51 987 654 321</a>
+        <a class="btn wa-link" href="#"><svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5 2.5 1 3 .8 3.6.8.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 12 21.8zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg> Emergencia: <span data-aj="telefono">+51 987 654 321</span></a>
       </div>
     </div>
   </section>
@@ -165,10 +167,10 @@
       </div>
       <div class="foot-c">
         <h4>Visítanos</h4>
-        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-7.6 8-13a8 8 0 0 0-16 0c0 5.4 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg> Av. Larco 1234, Miraflores, Lima</span>
-        <a class="wa-link" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg> +51 987 654 321</a>
-        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg> hola@huellitas.pe</span>
-        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Lun–Sáb 9:00–19:00 · Dom 9:00–13:00</span>
+        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-7.6 8-13a8 8 0 0 0-16 0c0 5.4 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg> <span data-aj="direccion">Av. Larco 1234, Miraflores, Lima</span></span>
+        <a class="wa-link" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg> <span data-aj="telefono">+51 987 654 321</span></a>
+        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg> <span data-aj="correo">hola@huellitas.pe</span></span>
+        <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-aj="horario">Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span></span>
       </div>
     </div>
     <div class="container foot-bottom">
