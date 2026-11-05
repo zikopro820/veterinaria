@@ -28,13 +28,13 @@
     <div class="container nav">
       <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
       <ul class="menu" id="menu">
-        <li><a href="./" class="active" aria-current="page">Inicio</a></li>
-        <li><a href="servicios">Servicios</a></li>
-        <li><a href="tienda">Pet Shop</a></li>
-        <li><a href="citas">Reservar cita</a></li>
-        <li><a href="mi-mascota">Mi Mascota</a></li>
-        <li><a href="nosotros">Nosotros</a></li>
-        <li><a href="contacto">Contacto</a></li>
+        <li><a href="./" data-nav="inicio" class="active" aria-current="page">Inicio</a></li>
+        <li><a href="servicios" data-nav="servicios">Servicios</a></li>
+        <li><a href="tienda" data-nav="tienda">Pet Shop</a></li>
+        <li><a href="citas" data-nav="citas">Reservar cita</a></li>
+        <li><a href="mi-mascota" data-nav="mi-mascota">Mi Mascota</a></li>
+        <li><a href="nosotros" data-nav="nosotros">Nosotros</a></li>
+        <li><a href="contacto" data-nav="contacto">Contacto</a></li>
       </ul>
       <div class="nav-cta">
         <a href="citas" class="btn btn-coral btn-sm"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg><span class="btn-txt">Agendar cita</span></a>
@@ -69,7 +69,7 @@
     </div>
   </section>
 
-  <div class="container quick">
+  <div class="container quick" data-sec="accesos">
     <div class="quick-box reveal">
       <a href="citas"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></i><div><b>Reservar cita</b><span>Elige día y hora libre</span></div></a>
       <a href="mi-mascota"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg></i><div><b>Mi Mascota</b><span>Historial con tu código</span></div></a>
@@ -78,7 +78,7 @@
     </div>
   </div>
 
-  <section>
+  <section data-sec="servicios">
     <div class="container">
       <div class="head-row">
         <div class="sec-head reveal">
@@ -129,12 +129,11 @@
     </div>
   </section>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-sec="portal">
     <div class="container portal">
       <div class="reveal">
-        <span class="pill mint"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg> Portal Mi Mascota</span>
-        <div class="sec-head" style="margin-bottom:0"><h2>Su salud, <span class="c-pri">en tu celular</span></h2>
-        <p>En tu primera visita te damos un <b>código personal</b> (ej. HV-1024). Con él entras desde cualquier celular, sin contraseñas ni apps.</p></div>
+        <div class="sec-head" style="margin-bottom:0"><span class="pill mint"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg> Portal Mi Mascota</span><h2>Su salud, <span class="c-pri">en tu celular</span></h2>
+        <p>En tu primera visita te damos un código personal. Con él entras desde cualquier celular, sin contraseñas ni apps.</p></div>
         <ul class="portal-list">
           <li><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></i><div><b>¿A qué hora le toca?</b><span>Ve su próxima cita con cuenta regresiva y confírmala con un toque.</span></div></li>
           <li><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></i><div><b>Carnet de vacunas digital</b><span>Sabrás qué vacuna está al día, cuál vence pronto y cuál falta.</span></div></li>
@@ -159,7 +158,7 @@
     </div>
   </section>
 
-  <section>
+  <section data-sec="emergencias">
     <div class="container">
 
       <div class="emergency reveal" data-emerg>
@@ -169,7 +168,7 @@
     </div>
   </section>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-sec="tienda">
     <div class="container">
       <div class="head-row">
         <div class="sec-head reveal">
@@ -183,7 +182,7 @@
     </div>
   </section>
 
-  <section>
+  <section data-sec="pasos">
     <div class="container">
       <div class="sec-head center reveal">
         <span class="pill"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg> Así de fácil</span>
@@ -192,13 +191,13 @@
       <div class="steps">
         <div class="step reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3"/><circle cx="20" cy="12" r="2"/></svg></i><h3>Elige el servicio</h3><p>Consulta, vacuna, baño, cirugía o lo que necesite.</p></div>
         <div class="step reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></i><h3>Escoge día y hora</h3><p>Ves solo los horarios libres, sin llamar.</p></div>
-        <div class="step reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></i><h3>Confirma por WhatsApp</h3><p>Te respondemos en minutos con la confirmación.</p></div>
+        <div class="step reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></i><h3>Queda confirmada</h3><p>Al instante, y te avisamos por WhatsApp.</p></div>
         <div class="step reveal"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg></i><h3>Sigue todo con tu código</h3><p>Historial, vacunas y recordatorios en Mi Mascota.</p></div>
       </div>
     </div>
   </section>
 
-  <section class="bg-soft">
+  <section class="bg-soft" data-sec="testimonios">
     <div class="container">
       <div class="sec-head center reveal">
         <span class="pill coral"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg> Opiniones</span>
@@ -216,7 +215,7 @@
     </div>
   </section>
 
-  <section>
+  <section data-sec="cta">
     <div class="container">
       <div class="cta reveal">
         <div>
@@ -237,7 +236,7 @@
     <div class="container foot">
       <div>
         <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
-        <p>Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular.</p>
+        <p id="pieTexto">Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular.</p>
         <div class="socials">
           <a href="#" data-red="facebook" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
           <a href="#" data-red="instagram" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>

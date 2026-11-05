@@ -66,18 +66,19 @@ const mezclar = (a, b) => { const o = { ...a }; for (const k in (b || {})) o[k] 
 let DATA = null;
 async function cargarDatos() {
   if (DATA) return DATA;
-  let prod = null, serv = null, aj = null, web = null;
+  let prod = null, serv = null, aj = null, web = null, cats = null, pags = null;
   try {
     if (EN_VIVO) {
       let cache = null; try { cache = JSON.parse(sessionStorage.getItem("hv_cache")); } catch (e) {}
-      if (cache && cache.v === 2 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web } = cache);
+      if (cache && cache.v === 3 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web, cats, pags } = cache);
       else {
         const { fs, db } = await fb();
-        const [p, s, a, w] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
-          fs.getDoc(fs.doc(db, "ajustes", "general")), fs.getDoc(fs.doc(db, "ajustes", "web"))]);
+        const [p, s, a, w, c, g] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
+          fs.getDoc(fs.doc(db, "ajustes", "general")), fs.getDoc(fs.doc(db, "ajustes", "web")), fs.getDoc(fs.doc(db, "ajustes", "categorias")), fs.getDoc(fs.doc(db, "ajustes", "paginas"))]);
+        cats = c.exists() ? c.data() : null; pags = g.exists() ? g.data() : null;
         prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id }));
         aj = a.exists() ? a.data() : null; web = w.exists() ? w.data() : null;
-        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 2, t: Date.now(), prod, serv, aj, web })); } catch (e) {}
+        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 3, t: Date.now(), prod, serv, aj, web, cats, pags })); } catch (e) {}
       }
     } else {
       const local = localDB();
@@ -85,6 +86,7 @@ async function cargarDatos() {
         if (local.productos) prod = Object.entries(local.productos).map(([id, x]) => ({ ...x, id }));
         if (local.servicios) serv = Object.entries(local.servicios).map(([id, x]) => ({ ...x, id }));
         aj = local.ajustes || null; web = local.web || null;
+        cats = (local.conf || {}).categorias || null; pags = (local.conf || {}).paginas || null;
       }
     }
   } catch (e) { console.warn("No se pudieron leer los datos; se usan los de ejemplo.", e); }
@@ -93,8 +95,24 @@ async function cargarDatos() {
     servicios: ordenar(serv && serv.length ? serv : D0.servicios).filter(x => x.visible !== false),
     ajustes: { ...D0.ajustes, ...(aj || {}) },
     web: mezclar(D0.web || {}, web),
+    categorias: { productos: ordenar((cats && cats.productos) || D0.categorias.productos), servicios: ordenar((cats && cats.servicios) || D0.categorias.servicios) },
+    paginas: mezclar(D0.paginas || {}, pags),
   };
   return DATA;
+}
+
+/* ---------- Categorías (Pet Shop y servicios) ---------- */
+let CATS = { productos: D0.categorias.productos, servicios: D0.categorias.servicios };
+const norm = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const catDe = (tipo, id) => CATS[tipo].find(c => c.id === id || norm(c.n) === norm(id)) || null;
+const catNom = (tipo, id) => (catDe(tipo, id) || {}).n || id || "";
+const enCat = (tipo, x, cid) => { const c = catDe(tipo, x.cat); return c ? c.id === cid : x.cat === cid; };
+const catVisible = (tipo, x) => { const c = catDe(tipo, x.cat); return !c || c.visible !== false; };
+function chipsCat(el, tipo, items, onPick, todos = "Todos") {
+  const usados = CATS[tipo].filter(c => c.visible !== false && items.some(x => enCat(tipo, x, c.id)));
+  el.innerHTML = `<button class="chip on" data-c="">${ICO.paw} ${todos}</button>` + usados.map(c => `<button class="chip" data-c="${esc(c.id)}">${icono(c.icon)} ${esc(c.n)}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; $$(".chip", el).forEach(x => x.classList.remove("on")); b.classList.add("on"); onPick(b.dataset.c); };
+  return usados;
 }
 
 /* ---------- Ajustes: WhatsApp, dirección, horarios ---------- */
@@ -165,10 +183,18 @@ function svcCard(x) {
       ${x.reservable !== false ? `<a href="citas?servicio=${encodeURIComponent(x.id)}" class="btn btn-light btn-sm">Reservar ${ICO.arrow}</a>` : `<a href="contacto" class="btn btn-light btn-sm">Consultar ${ICO.arrow}</a>`}</div>
     </div></article>`;
 }
-function pintarServicios(list) {
+function pintarServicios(todos) {
+  const list = todos.filter(x => catVisible("servicios", x));
   const main = $$("#svcMain"), mini = $("#svcMini");
-  main.forEach(el => { const lim = +el.dataset.limit || 99; el.innerHTML = list.filter(x => x.tipo !== "adicional").slice(0, lim).map(svcCard).join(""); revealAll(el); });
-  if (mini) { mini.innerHTML = list.filter(x => x.tipo === "adicional").map(x => `<div class="svc-mini reveal"><i>${icono(x.icon)}</i><div><b>${esc(x.n)}</b><span>${esc(x.d)}${+x.p ? " · desde " + precio(x.p) : ""}</span></div></div>`).join(""); revealAll(mini); }
+  const draw = cid => {
+    const l = cid ? list.filter(x => enCat("servicios", x, cid)) : list;
+    main.forEach(el => { const lim = +el.dataset.limit || 99, pri = l.filter(x => x.tipo !== "adicional");
+      el.innerHTML = (cid ? l.map(svcCard) : pri.slice(0, lim).map(svcCard)).join("") || `<p class="empty">No hay servicios en esta categoría.</p>`; revealAll(el); });
+    if (mini) { mini.parentElement.parentElement.style.display = cid ? "none" : "";
+      mini.innerHTML = list.filter(x => x.tipo === "adicional").map(x => `<div class="svc-mini reveal"><i>${icono(x.icon)}</i><div><b>${esc(x.n)}${x.domicilio ? ` <span class="mini-tag">A domicilio</span>` : ""}</b><span>${esc(x.d)}${+x.p ? " · desde " + precio(x.p) : ""}</span></div></div>`).join(""); revealAll(mini); }
+  };
+  const box = $("#svcCats"); if (box) chipsCat(box, "servicios", list, draw, "Todos los servicios");
+  draw("");
 }
 
 /* =========================================================
@@ -179,11 +205,11 @@ let cart = store.get("hv_cart", []).map(i => ({ ...i, id: String(i.id) }));
 const P = id => PRODS.find(p => String(p.id) === String(id));
 const disponible = p => p && p.stock !== "agotado";
 function saveCart() { store.set("hv_cart", cart); drawCart(); }
-function addToCart(id) {
+function addToCart(id, q = 1) {
   if (!disponible(P(id))) return toast("Producto agotado");
   const it = cart.find(i => i.id === String(id));
-  it ? it.q++ : cart.push({ id: String(id), q: 1 });
-  saveCart(); toast("Agregado al carrito");
+  it ? it.q += q : cart.push({ id: String(id), q });
+  saveCart(); toast(q > 1 ? `${q} unidades agregadas al carrito` : "Agregado al carrito");
 }
 function drawCart() {
   cart = cart.filter(i => disponible(P(i.id)));
@@ -238,10 +264,10 @@ function card(p) {
   const ag = !disponible(p);
   const tag = ag ? `<span class="tag out">Agotado</span>` : p.tag ? `<span class="tag ${p.tag === "Nuevo" ? "new" : p.tag === "Recomendado" ? "vet" : ""}">${p.tag === "Recomendado" ? "Recomendado por el vet" : esc(p.tag)}</span>` : "";
   return `<article class="prod${ag ? " sold" : ""}">${tag}
-    <div class="prod-img" style="background:linear-gradient(135deg,${GRAD[hash(p.id) % 4]})"><span class="ph">${ICO.paw}</span>
-      ${p.img ? `<img src="${esc(foto(p.img))}" alt="${esc(p.n)}" loading="lazy" onerror="this.remove()">` : ""}</div>
-    <div class="prod-body"><span class="cat">${esc(p.cat)} · ${p.esp === "ambos" ? "Perro y gato" : p.esp === "perro" ? "Perro" : "Gato"}</span>
-      <h3>${esc(p.n)}</h3><p class="desc">${esc(p.d)}</p>
+    <a class="prod-img" href="producto?id=${encodeURIComponent(p.id)}" aria-label="Ver ${esc(p.n)}" style="background:linear-gradient(135deg,${GRAD[hash(p.id) % 4]})"><span class="ph">${ICO.paw}</span>
+      ${p.img ? `<img src="${esc(foto(p.img))}" alt="${esc(p.n)}" loading="lazy" onerror="this.remove()">` : ""}<span class="view">Ver producto</span></a>
+    <div class="prod-body"><span class="cat">${esc(catNom("productos", p.cat))} · ${p.esp === "ambos" ? "Perro y gato" : p.esp === "perro" ? "Perro" : "Gato"}</span>
+      <h3><a href="producto?id=${encodeURIComponent(p.id)}">${esc(p.n)}</a></h3><p class="desc">${esc(p.d)}</p>
       <div class="prod-foot"><div class="p"><b>${soles(p.p)}</b>${+p.old > +p.p ? `<s>${soles(p.old)}</s>` : ""}</div>
         <button class="add" data-add="${esc(p.id)}" aria-label="Agregar ${esc(p.n)} al carrito" ${ag ? "disabled" : ""}>${ICO.plus}</button></div>
     </div></article>`;
@@ -255,18 +281,18 @@ function pintarTienda() {
   const feat = $("#featured");
   if (feat) { const d = PRODS.filter(p => p.destacado && disponible(p)); feat.innerHTML = (d.length ? d : PRODS.filter(disponible)).slice(0, 4).map(card).join(""); }
   const grid = $("#shopGrid"); if (!grid) return;
-  let fCat = "Todos", fEsp = "todos", q = "";
+  let fCat = "", fEsp = "todos", q = "";
   const draw = () => {
-    const list = PRODS.filter(p => (fCat === "Todos" || p.cat === fCat) && (fEsp === "todos" || p.esp === fEsp || p.esp === "ambos") && (p.n + " " + (p.d || "")).toLowerCase().includes(q))
+    const list = PRODS.filter(p => catVisible("productos", p) && (!fCat || enCat("productos", p, fCat)) && (fEsp === "todos" || p.esp === fEsp || p.esp === "ambos") && (p.n + " " + (p.d || "")).toLowerCase().includes(q))
       .sort((a, b) => disponible(b) - disponible(a));
     grid.innerHTML = list.length ? list.map(card).join("") : `<p class="empty">No encontramos productos con ese filtro. Escríbenos por WhatsApp y te lo conseguimos.</p>`;
     $("#shopCount").textContent = list.length + (list.length === 1 ? " producto" : " productos");
   };
-  $$("[data-cat]").forEach(c => c.addEventListener("click", () => { $$("[data-cat]").forEach(x => x.classList.remove("on")); c.classList.add("on"); fCat = c.dataset.cat; draw(); }));
+  chipsCat($("#shopCats"), "productos", PRODS, c => { fCat = c; draw(); });
   $$("[data-esp]").forEach(c => c.addEventListener("click", () => { $$("[data-esp]").forEach(x => x.classList.remove("on")); c.classList.add("on"); fEsp = c.dataset.esp; draw(); }));
   $("#shopSearch").addEventListener("input", e => { q = e.target.value.trim().toLowerCase(); draw(); });
   const pc = new URLSearchParams(location.search).get("cat");
-  if (pc) { const c = $(`[data-cat="${pc}"]`); if (c) c.click(); else draw(); } else draw();
+  if (pc) { const c = catDe("productos", pc), b = c && $(`#shopCats [data-c="${c.id}"]`); if (b) b.click(); else draw(); } else draw();
 }
 
 /* =========================================================
@@ -335,7 +361,13 @@ async function reservar(base) {   // intenta ocupar un lugar libre del horario; 
 function iniciarCitas(servicios) {
   const book = $("#bookForm"); if (!book) return;
   const opts = $("#svcOpts"), res = servicios.filter(x => x.reservable !== false);
-  if (opts && res.length) opts.innerHTML = res.map((x, i) => `<label class="opt"><input type="radio" name="servicio" value="${esc(x.n)}" data-key="${esc(x.id)}" data-p="${+x.p || 0}" data-price="${+x.p ? "Desde " + precio(x.p) : "Consultar"}" required${i === 0 ? " checked" : ""}><span>${icono(x.icon)}${esc(x.n)}<small>${+x.p ? "desde " + precio(x.p) : "a consultar"}</small></span></label>`).join("");
+  const opt = (x, i) => `<label class="opt"><input type="radio" name="servicio" value="${esc(x.n)}" data-key="${esc(x.id)}" data-p="${+x.p || 0}" data-dom="${x.domicilio ? 1 : ""}" data-price="${+x.p ? "Desde " + precio(x.p) : "Consultar"}" required${i === 0 ? " checked" : ""}><span>${icono(x.icon)}${esc(x.n)}<small>${+x.p ? "desde " + precio(x.p) : "a consultar"}${x.domicilio ? " · a domicilio" : ""}</small></span></label>`;
+  if (opts && res.length) {
+    let i = 0; const grupos = CATS.servicios.filter(c => c.visible !== false).map(c => ({ c, l: res.filter(x => enCat("servicios", x, c.id)) })).filter(g => g.l.length);
+    const sinCat = res.filter(x => !catDe("servicios", x.cat));
+    if (grupos.length > 1) { opts.classList.add("grouped"); opts.innerHTML = grupos.map(g => `<p class="opt-cat">${icono(g.c.icon)} ${esc(g.c.n)}</p>` + g.l.map(x => opt(x, i++)).join("")).join("") + (sinCat.length ? `<p class="opt-cat">Otros</p>` + sinCat.map(x => opt(x, i++)).join("") : ""); }
+    else opts.innerHTML = res.map(opt).join("");
+  }
   const dateIn = $("[name=fecha]", book), slotsBox = $("#slots");
   dateIn.min = isoD(new Date());
   const max = new Date(); max.setDate(max.getDate() + 60); dateIn.max = isoD(max);
@@ -362,8 +394,16 @@ function iniciarCitas(servicios) {
     $$(".slot", slotsBox).forEach(x => x.classList.remove("on")); b.classList.add("on"); slot = b.dataset.h; updateSum();
   });
   dateIn.addEventListener("change", drawSlots);
+  const dirBox = $("#dirBox");
+  function verDomicilio() {
+    const s = $("input[name=servicio]:checked", book), dom = !!(s && s.dataset.dom);
+    dirBox.hidden = !dom; ["dirCliente", "distrito"].forEach(n => $(`[name=${n}]`, book).required = dom);
+    return dom;
+  }
   function updateSum() {
-    const s = $("input[name=servicio]:checked", book), e = $("input[name=especie]:checked", book);
+    const s = $("input[name=servicio]:checked", book), e = $("input[name=especie]:checked", book), dom = verDomicilio();
+    $("#sDirL").textContent = dom ? "Atención a domicilio" : "Dirección";
+    $("#sDir").textContent = dom ? ([($("[name=dirCliente]", book).value || "").trim(), ($("[name=distrito]", book).value || "").trim()].filter(Boolean).join(", ") || "Escribe tu dirección") : AJ.direccion;
     $("#sServ").textContent = s ? s.value : "—";
     $("#sPet").textContent = ($("[name=mascota]", book).value.trim() || "—") + (e ? " · " + e.value : "");
     $("#sDate").textContent = dateIn.value ? nice(dateIn.value) : "—";
@@ -420,8 +460,11 @@ function iniciarCitas(servicios) {
     }
     const v = n => ($(`[name="${n}"]`, book)?.value || "").trim();
     const s = $("input[name=servicio]:checked", book);
+    const dom = !!s.dataset.dom;
     const cita = {
       fecha: dateIn.value, hora: slot, servicioId: s.dataset.key, servicio: s.value, precio: +s.dataset.p || 0,
+      domicilio: dom, dirCliente: dom ? v("dirCliente").slice(0, 150) : "", distrito: dom ? v("distrito").slice(0, 60) : "",
+      referencia: dom ? v("referencia").slice(0, 150) : "", ubicacion: dom ? v("ubicacion").slice(0, 300) : "",
       code: cliente ? cliente.code : "", mascotaId: cliente ? v("mascotaId") : "", mascota: v("mascota"),
       especie: $("input[name=especie]:checked", book).value, raza: v("raza").slice(0, 80),
       dueno: v("nombre").slice(0, 80), celular: v("celular").replace(/[^\d+ ]/g, "").slice(0, 15), motivo: v("motivo").slice(0, 300),
@@ -435,15 +478,17 @@ function iniciarCitas(servicios) {
     const txt = ["Hola, acabo de reservar una cita en la web:", "",
       `• Servicio: ${cita.servicio}${cita.precio ? " (desde " + precio(cita.precio) + ")" : ""}`, `• Fecha: ${nice(cita.fecha)}`, `• Hora: ${cita.hora}`,
       `• Mascota: ${cita.mascota} (${cita.especie})`, `• Dueño(a): ${cita.dueno}`, `• Celular: ${cita.celular}`];
+    if (dom) txt.push(`• *A domicilio:* ${cita.dirCliente}, ${cita.distrito}${cita.referencia ? " (Ref: " + cita.referencia + ")" : ""}`, ...(cita.ubicacion ? [`• Ubicación: ${cita.ubicacion}`] : []));
     if (cita.code) txt.push(`• Código de cliente: ${cita.code}`);
     if (cita.motivo) txt.push(`• Motivo: ${cita.motivo}`);
     book.hidden = true;
     const ok = $("#bookOk"); ok.hidden = false;
-    ok.innerHTML = `<div class="ok-ic">${ICO.check}</div><h3>¡Cita confirmada!</h3><p>Te esperamos, ${esc(cita.dueno.split(" ")[0])}. Guarda estos datos:</p>
+    ok.innerHTML = `<div class="ok-ic">${ICO.check}</div><h3>¡Cita confirmada!</h3><p>${dom ? "Te visitaremos" : "Te esperamos"}, ${esc(cita.dueno.split(" ")[0])}. Guarda estos datos:</p>
       <div class="ok-box"><div><span>Servicio</span><b>${esc(cita.servicio)}</b></div><div><span>Fecha</span><b>${esc(nice(cita.fecha))}</b></div>
       <div><span>Hora</span><b>${esc(cita.hora)} h</b></div><div><span>Mascota</span><b>${esc(cita.mascota)}</b></div>
-      <div><span>Precio</span><b>${cita.precio ? "Desde " + precio(cita.precio) : "A consultar"}</b></div><div><span>Pago</span><b>Pendiente (pagas en la veterinaria)</b></div></div>
-      <p class="sub-ok">Llega 10 minutos antes. ${cita.code ? "También la verás en <b>Mi Mascota</b> con tu código." : "En tu primera visita te daremos tu código para ver el historial de tu mascota."}</p>
+      <div><span>Precio</span><b>${cita.precio ? "Desde " + precio(cita.precio) : "A consultar"}</b></div><div><span>Pago</span><b>Pendiente (${dom ? "pagas al recibir la visita" : "pagas en la veterinaria"})</b></div>
+      <div class="full"><span>${dom ? "Te visitamos en" : "Te esperamos en"}</span><b>${esc(dom ? `${cita.dirCliente}, ${cita.distrito}${cita.referencia ? " · Ref: " + cita.referencia : ""}` : AJ.direccion)}</b></div></div>
+      <p class="sub-ok">${dom ? "Te escribiremos por WhatsApp cuando estemos en camino." : "Llega 10 minutos antes."} ${cita.code ? "También la verás en <b>Mi Mascota</b> con tu código." : "En tu primera visita te daremos tu código para ver el historial de tu mascota."}</p>
       <div class="hero-actions"><button class="btn btn-pri" id="okWa">${ICO.check} Avisar por WhatsApp</button>${cita.code ? `<a class="btn btn-light" href="mi-mascota?codigo=${esc(cita.code)}">Ver en Mi Mascota</a>` : ""}<a class="btn btn-light" href="citas">Reservar otra</a></div>`;
     $("#okWa").addEventListener("click", () => wa(txt.join("\n")));
     ok.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -655,13 +700,144 @@ if (cf) cf.addEventListener("submit", e => {
   msg.className = "f-msg ok"; msg.textContent = "¡Listo! Se abrió WhatsApp con tu mensaje.";
 });
 
+/* =========================================================
+   PÁGINAS EDITABLES: menú, encabezados, secciones del inicio, pie
+   ========================================================= */
+const PAGINA = (location.pathname.split("/").pop() || "").replace(/\.html$/, "") || "inicio";
+const PAG_KEY = PAGINA === "index" ? "inicio" : PAGINA;
+const QS = new URLSearchParams(location.search);
+function setHead(el, d) {   // pill + título (con parte en color) + texto
+  if (!el || !d) return;
+  const pill = $(".pill", el), h = $("h1, h2, h3", el), p = h && h.parentElement.querySelector(":scope > p") || $("p", el);
+  if (pill && d.pill != null) { const svg = pill.querySelector("svg"); pill.innerHTML = (svg ? svg.outerHTML + " " : "") + esc(d.pill); pill.style.display = d.pill ? "" : "none"; }
+  if (h && d.titulo != null) h.innerHTML = esc(d.titulo) + (d.tituloColor ? ` <span class="${h.tagName === "H1" && !el.classList.contains("page-head") ? "" : "c-pri"}">${esc(d.tituloColor)}</span>` : "");
+  if (p && d.texto != null) { p.textContent = d.texto; p.style.display = d.texto ? "" : "none"; }
+}
+function aplicarPaginas(pg) {
+  // Menú
+  const menuEl = $("#menu");
+  if (menuEl && pg.menu) {
+    const extra = (pg.extras || []).filter(x => x.enMenu).map(x => ({ id: "p:" + x.slug, n: x.n, visible: true, href: "pagina?p=" + encodeURIComponent(x.slug) }));
+    const activo = PAG_KEY === "producto" ? "tienda" : PAG_KEY === "pagina" ? "p:" + QS.get("p") : PAG_KEY;
+    menuEl.innerHTML = [...pg.menu.filter(m => m.visible !== false).map(m => ({ ...m, href: m.id === "inicio" ? "./" : m.id })), ...extra]
+      .map(m => `<li><a href="${esc(m.href)}" data-nav="${esc(m.id)}"${m.id === activo ? ' class="active" aria-current="page"' : ""}>${esc(m.n)}</a></li>`).join("");
+    const ocultas = pg.menu.filter(m => m.visible === false).map(m => m.id);
+    $$("footer a").forEach(a => { const h = (a.getAttribute("href") || "").split("?")[0]; if (ocultas.includes(h)) a.closest("li") ? a.closest("li").style.display = "none" : a.style.display = "none"; });
+  }
+  // Encabezado de cada página
+  const enc = (pg.encabezados || {})[PAG_KEY];
+  if (enc) setHead($("[data-ph]"), enc);
+  // Secciones del inicio: textos, mostrar/ocultar y orden
+  if (PAG_KEY === "inicio" && pg.inicio) {
+    const foot = $("footer");
+    let n = 0;
+    pg.inicio.forEach(sx => {
+      const el = $(`[data-sec="${sx.id}"]`); if (!el) return;
+      el.style.display = sx.visible === false ? "none" : "";
+      if (sx.id === "emergencias") { const e = $(".emergency", el); if (e) { if (sx.titulo) $("h3", e).textContent = sx.titulo; if (sx.texto != null) $("p", e).textContent = sx.texto; } }
+      else if (sx.id === "cta") { const c = $(".cta", el); if (c) { if (sx.titulo) $("h2", c).textContent = sx.titulo; if (sx.texto != null) $("p", c).textContent = sx.texto; } }
+      else if (sx.id !== "accesos") setHead($(".sec-head", el) || el, sx);
+      if (sx.id !== "accesos") { foot.parentNode.insertBefore(el, foot); }
+      if (sx.visible !== false && el.tagName === "SECTION" && !["emergencias", "cta"].includes(sx.id)) el.classList.toggle("bg-soft", n++ % 2 === 0);
+    });
+    const cta = $('[data-sec="cta"]'); if (cta) cta.classList.remove("bg-soft");
+  }
+  // Pie de página
+  if (pg.pie && pg.pie.texto && $("#pieTexto")) $("#pieTexto").textContent = pg.pie.texto;
+}
+
+/* =========================================================
+   PÁGINA DE PRODUCTO (producto?id=...)
+   ========================================================= */
+async function infoProducto(id) {
+  try {
+    if (EN_VIVO) { const { fs, db } = await fb(); const s = await fs.getDoc(fs.doc(db, "productos_info", id)); return s.exists() ? s.data() : null; }
+    return ((localDB() || {}).productos_info || {})[id] || null;
+  } catch (e) { return null; }
+}
+async function paginaProducto() {
+  const box = $("#pd"); if (!box) return;
+  const id = QS.get("id"), p = P(id);
+  if (!p) { box.innerHTML = `<div class="pd-empty"><h2>Producto no encontrado</h2><p>Puede que ya no esté disponible.</p><a class="btn btn-pri" href="tienda">Volver a la tienda</a></div>`; return; }
+  const info = await infoProducto(id) || {};
+  const imgs = [p.img, ...(info.imgs || [])].filter(Boolean);
+  const cat = catDe("productos", p.cat), ag = !disponible(p);
+  const off = +p.old > +p.p ? Math.round((1 - p.p / p.old) * 100) : 0;
+  const det = String(info.detalles || "").split("\n").map(l => l.split(":")).filter(x => x[0].trim() && x.length > 1);
+  const larga = String(info.larga || "").split(/\n{2,}/).filter(Boolean);
+  document.title = `${p.n} | ${NOMBRE}`;
+  $("#pdCrumbs").innerHTML = `<a href="tienda">Pet Shop</a>${cat ? ` <span>›</span> <a href="tienda?cat=${encodeURIComponent(cat.id)}">${esc(cat.n)}</a>` : ""} <span>›</span> <b>${esc(p.n)}</b>`;
+  box.innerHTML = `
+    <div class="pd-gal">
+      <div class="pd-main" style="background:linear-gradient(135deg,${GRAD[hash(p.id) % 4]})">${imgs.length ? `<img id="pdImg" src="${esc(foto(imgs[0], 900))}" alt="${esc(p.n)}">` : `<span class="ph">${ICO.paw}</span>`}
+        ${off ? `<span class="tag">-${off}%</span>` : p.tag ? `<span class="tag ${p.tag === "Nuevo" ? "new" : p.tag === "Recomendado" ? "vet" : ""}">${esc(p.tag === "Recomendado" ? "Recomendado por el vet" : p.tag)}</span>` : ""}</div>
+      ${imgs.length > 1 ? `<div class="pd-thumbs">${imgs.map((im, i) => `<button class="${i ? "" : "on"}" data-im="${esc(foto(im, 900))}" aria-label="Foto ${i + 1}"><img src="${esc(foto(im, 200))}" alt=""></button>`).join("")}</div>` : ""}
+    </div>
+    <div class="pd-info">
+      <span class="cat">${esc(cat ? cat.n : p.cat)} · ${p.esp === "ambos" ? "Perro y gato" : p.esp === "perro" ? "Perro" : "Gato"}</span>
+      <h1>${esc(p.n)}</h1>
+      <div class="pd-price"><b>${soles(p.p)}</b>${off ? `<s>${soles(p.old)}</s><span class="save">Ahorras ${soles(p.old - p.p)}</span>` : ""}</div>
+      <p class="pd-stock ${ag ? "out" : ""}">${ag ? "Agotado por ahora · escríbenos y te avisamos cuando llegue" : "Disponible · listo para entrega"}</p>
+      ${p.d ? `<p class="pd-desc">${esc(p.d)}</p>` : ""}
+      <div class="pd-buy">
+        <div class="qty big"><button type="button" data-pq="-1" aria-label="Menos">−</button><span id="pdQ">1</span><button type="button" data-pq="1" aria-label="Más">+</button></div>
+        <button class="btn btn-pri" id="pdAdd" ${ag ? "disabled" : ""}>${ICO.bag} Agregar al carrito</button>
+      </div>
+      <button class="btn btn-coral btn-block" id="pdNow">${ag ? "Consultar disponibilidad por WhatsApp" : "Comprar ahora por WhatsApp"}</button>
+      <div class="pd-perks">
+        <span>${icono("truck")} ${+AJ.deliveryGratis ? `Delivery gratis desde S/ ${AJ.deliveryGratis}` : "Delivery a domicilio"}</span>
+        <span>${icono("shield")} Productos originales</span>
+        <span>${icono("steth")} Asesoría veterinaria</span>
+      </div>
+      <button class="share" id="pdShare">${icono("sparkle")} Compartir este producto</button>
+    </div>`;
+  if (larga.length || det.length) box.insertAdjacentHTML("afterend", `<div class="pd-more">${larga.length ? `<div><h2>Descripción</h2>${larga.map(x => `<p>${esc(x)}</p>`).join("")}</div>` : ""}${det.length ? `<div><h2>Detalles</h2><dl>${det.map(x => `<dt>${esc(x[0].trim())}</dt><dd>${esc(x.slice(1).join(":").trim())}</dd>`).join("")}</dl></div>` : ""}</div>`);
+  let q = 1;
+  box.addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.im) { $("#pdImg").src = t.dataset.im; $$(".pd-thumbs button").forEach(x => x.classList.toggle("on", x === t)); }
+    if (t.dataset.pq) { q = Math.max(1, Math.min(99, q + +t.dataset.pq)); $("#pdQ").textContent = q; }
+  });
+  $("#pdAdd").addEventListener("click", () => { addToCart(p.id, q); $("#cart") && $("#cart").classList.add("open"); });
+  $("#pdNow").addEventListener("click", () => wa(ag ? `Hola ${NOMBRE}, ¿cuándo tendrán disponible *${p.n}*? Me interesa.`
+    : `Hola ${NOMBRE}, quiero comprar:\n\n• ${q} x ${p.n} — ${soles(p.p * q)}\n\n${location.href}\n\n¿Me confirman disponibilidad y el envío?`));
+  $("#pdShare").addEventListener("click", async () => {
+    const data = { title: p.n, text: `${p.n} — ${soles(p.p)}`, url: location.href };
+    try { if (navigator.share) return await navigator.share(data); } catch (e) { return; }
+    window.open("https://wa.me/?text=" + encodeURIComponent(`${data.text}\n${data.url}`), "_blank");
+  });
+  const rel = PRODS.filter(x => x.id !== p.id && catVisible("productos", x) && (cat ? enCat("productos", x, cat.id) : x.cat === p.cat)).concat(PRODS.filter(x => x.id !== p.id && x.esp === p.esp)).filter((x, i, a) => a.indexOf(x) === i).slice(0, 4);
+  if (rel.length) { $("#pdRelSec").hidden = false; $("#pdRel").innerHTML = rel.map(card).join(""); }
+}
+
+/* =========================================================
+   PÁGINAS CREADAS DESDE EL PANEL (pagina?p=...)
+   ========================================================= */
+function paginaLibre(pg) {
+  const box = $("#pg"); if (!box) return;
+  const x = (pg.extras || []).find(e => e.slug === QS.get("p"));
+  if (!x) { box.innerHTML = `<section class="page-head"><div class="container"><h1>Página no encontrada</h1><p>Puede que haya sido eliminada.</p><div class="hero-actions" style="justify-content:center"><a class="btn btn-pri" href="./">Ir al inicio</a></div></div></section>`; return; }
+  document.title = `${x.n} | ${NOMBRE}`;
+  box.innerHTML = `<section class="page-head"><div class="container">${x.pill ? `<span class="pill">${icono("sparkle")} ${esc(x.pill)}</span>` : ""}<h1>${esc(x.titulo || x.n)}${x.tituloColor ? ` <span class="c-pri">${esc(x.tituloColor)}</span>` : ""}</h1>${x.texto ? `<p>${esc(x.texto)}</p>` : ""}</div></section>
+    <section><div class="container bloques">${(x.bloques || []).map((b, i) => `
+      <article class="bloque reveal ${b.img ? "con-img" : ""} ${i % 2 ? "alt" : ""}">
+        ${b.img ? `<div class="b-img"><img src="${esc(foto(b.img, 900))}" alt="" loading="lazy"></div>` : ""}
+        <div class="b-txt">${b.titulo ? `<h2>${esc(b.titulo)}</h2>` : ""}${String(b.texto || "").split(/\n+/).filter(Boolean).map(t => `<p>${esc(t)}</p>`).join("")}
+          ${b.boton && b.enlace ? `<a class="btn btn-pri" href="${esc(b.enlace)}">${esc(b.boton)} ${ICO.arrow}</a>` : ""}</div>
+      </article>`).join("")}</div></section>`;
+  revealAll(box);
+}
+
 /* ---------- Arranque ---------- */
 aplicarAjustes(AJ);
 if (D0.web) aplicarWeb(D0.web);
 cargarDatos().then(d => {
+  CATS = d.categorias;
   aplicarAjustes(d.ajustes);
   aplicarWeb(d.web);
+  aplicarPaginas(d.paginas);
   PRODS = d.productos; drawCart(); pintarTienda();
   pintarServicios(d.servicios);
   iniciarCitas(d.servicios);
+  paginaProducto(); paginaLibre(d.paginas);
 });

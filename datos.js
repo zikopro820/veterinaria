@@ -21,6 +21,7 @@ window.DATOS = {
  "servicios": [
   {
    "id": "consulta",
+   "cat": "salud",
    "n": "Consulta general",
    "d": "Evaluación completa, diagnóstico y tratamiento con veterinarios colegiados.",
    "p": 50,
@@ -29,10 +30,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 1,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "vacuna",
+   "cat": "salud",
    "n": "Vacunación",
    "d": "Calendario completo para perros y gatos con carnet digital y recordatorios.",
    "p": 45,
@@ -41,10 +44,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 2,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "bano",
+   "cat": "estetica",
    "n": "Baño y peluquería",
    "d": "Baño medicado, corte de raza, limpieza de oídos y corte de uñas.",
    "p": 40,
@@ -53,10 +58,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 3,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "dental",
+   "cat": "cirugia",
    "n": "Odontología",
    "d": "Limpieza dental con ultrasonido, extracciones y control de sarro.",
    "p": 150,
@@ -65,10 +72,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 4,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "cirugia",
+   "cat": "cirugia",
    "n": "Cirugía y esterilización",
    "d": "Quirófano equipado, anestesia inhalatoria y monitoreo constante.",
    "p": 250,
@@ -77,10 +86,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 5,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "laboratorio",
+   "cat": "salud",
    "n": "Laboratorio clínico",
    "d": "Hemograma, bioquímica y pruebas rápidas con resultados el mismo día.",
    "p": 60,
@@ -89,10 +100,12 @@ window.DATOS = {
    "tipo": "principal",
    "reservable": true,
    "orden": 6,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "desparasitacion",
+   "cat": "salud",
    "n": "Desparasitación",
    "d": "Interna y externa",
    "p": 25,
@@ -101,10 +114,12 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": true,
    "orden": 7,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "rayosx",
+   "cat": "salud",
    "n": "Ecografía y rayos X",
    "d": "Diagnóstico por imagen",
    "p": 90,
@@ -113,10 +128,12 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 8,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "hospitalizacion",
+   "cat": "cirugia",
    "n": "Hospitalización",
    "d": "Cuidado 24 h con reporte diario",
    "p": 0,
@@ -125,10 +142,13 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 9,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "domicilio",
+   "cat": "especiales",
+   "domicilio": true,
    "n": "Atención a domicilio",
    "d": "Vamos a tu casa",
    "p": 80,
@@ -141,6 +161,7 @@ window.DATOS = {
   },
   {
    "id": "microchip",
+   "cat": "salud",
    "n": "Microchip",
    "d": "Identificación permanente",
    "p": 70,
@@ -149,10 +170,12 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 11,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "emergencias",
+   "cat": "especiales",
    "n": "Emergencias 24/7",
    "d": "Siempre hay un veterinario de turno",
    "p": 0,
@@ -161,10 +184,12 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 12,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "geriatria",
+   "cat": "salud",
    "n": "Geriatría",
    "d": "Chequeos para mascotas mayores",
    "p": 0,
@@ -173,10 +198,12 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 13,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   },
   {
    "id": "exoticos",
+   "cat": "especiales",
    "n": "Animales exóticos",
    "d": "Conejos, cuyes, aves y hámsters",
    "p": 0,
@@ -185,7 +212,8 @@ window.DATOS = {
    "tipo": "adicional",
    "reservable": false,
    "orden": 14,
-   "visible": true
+   "visible": true,
+   "domicilio": false
   }
  ],
  "productos": [
@@ -193,7 +221,7 @@ window.DATOS = {
    "n": "Alimento Perro Adulto Razas Medianas 15 kg",
    "p": 189.9,
    "old": 219.9,
-   "cat": "Alimento",
+   "cat": "alimento",
    "esp": "perro",
    "tag": "Oferta",
    "img": "1581958485706-3c6f6eb4c1bf",
@@ -207,7 +235,7 @@ window.DATOS = {
   {
    "n": "Alimento Cachorro 3 kg",
    "p": 69.9,
-   "cat": "Alimento",
+   "cat": "alimento",
    "esp": "perro",
    "tag": "Recomendado",
    "img": "1510337550647-e84f83e341ca",
@@ -222,7 +250,7 @@ window.DATOS = {
   {
    "n": "Alimento Gato Adulto 7.5 kg",
    "p": 129.9,
-   "cat": "Alimento",
+   "cat": "alimento",
    "esp": "gato",
    "img": "1592194996308-7b43878e84a6",
    "d": "Control de bolas de pelo y salud urinaria.",
@@ -237,7 +265,7 @@ window.DATOS = {
   {
    "n": "Snacks Naturales Dentales 500 g",
    "p": 24.9,
-   "cat": "Alimento",
+   "cat": "alimento",
    "esp": "perro",
    "tag": "Nuevo",
    "img": "1629740067905-bd3f515aa739",
@@ -252,7 +280,7 @@ window.DATOS = {
   {
    "n": "Pipeta Antipulgas Perro 10 a 20 kg",
    "p": 45.0,
-   "cat": "Farmacia",
+   "cat": "farmacia",
    "esp": "perro",
    "tag": "Recomendado",
    "img": "1604165094771-7af34f7fd4cd",
@@ -267,7 +295,7 @@ window.DATOS = {
   {
    "n": "Desparasitante Interno (4 tabletas)",
    "p": 18.0,
-   "cat": "Farmacia",
+   "cat": "farmacia",
    "esp": "ambos",
    "img": "1534551767192-78b8dd45b51b",
    "d": "Amplio espectro. Consulta la dosis con tu veterinario.",
@@ -283,7 +311,7 @@ window.DATOS = {
    "n": "Arena Sanitaria Aglomerante 10 kg",
    "p": 39.9,
    "old": 46.9,
-   "cat": "Higiene",
+   "cat": "higiene",
    "esp": "gato",
    "tag": "Oferta",
    "img": "1574144611937-0df059b5ef3e",
@@ -297,7 +325,7 @@ window.DATOS = {
   {
    "n": "Shampoo Hipoalergénico 500 ml",
    "p": 32.0,
-   "cat": "Higiene",
+   "cat": "higiene",
    "esp": "ambos",
    "img": "1528846104175-4fd300ee59da",
    "d": "Ideal para pieles sensibles, con avena.",
@@ -312,7 +340,7 @@ window.DATOS = {
   {
    "n": "Correa Retráctil 5 m",
    "p": 59.9,
-   "cat": "Accesorios",
+   "cat": "accesorios",
    "esp": "perro",
    "img": "1708062270853-ee7c66b69f07",
    "d": "Freno de un toque, para perros de hasta 25 kg.",
@@ -327,7 +355,7 @@ window.DATOS = {
   {
    "n": "Collar con Placa Grabada",
    "p": 35.0,
-   "cat": "Accesorios",
+   "cat": "accesorios",
    "esp": "ambos",
    "tag": "Nuevo",
    "img": "1580129518863-f00fcf1d6e68",
@@ -342,7 +370,7 @@ window.DATOS = {
   {
    "n": "Casaca Impermeable para Perro",
    "p": 49.9,
-   "cat": "Accesorios",
+   "cat": "accesorios",
    "esp": "perro",
    "img": "1746483966037-c3c9e6374e08",
    "d": "Tallas XS a L. Ideal para el invierno.",
@@ -358,7 +386,7 @@ window.DATOS = {
    "n": "Cama Acolchada Mediana",
    "p": 99.9,
    "old": 119.9,
-   "cat": "Accesorios",
+   "cat": "accesorios",
    "esp": "ambos",
    "tag": "Oferta",
    "img": "1611254965886-e7caa829b627",
@@ -372,7 +400,7 @@ window.DATOS = {
   {
    "n": "Transportadora Mediana",
    "p": 119.0,
-   "cat": "Accesorios",
+   "cat": "accesorios",
    "esp": "ambos",
    "img": "1563460716037-460a3ad24ba9",
    "d": "Ventilada y segura, ideal para viajes y citas.",
@@ -387,7 +415,7 @@ window.DATOS = {
   {
    "n": "Rascador Torre para Gatos",
    "p": 89.9,
-   "cat": "Juguetes",
+   "cat": "juguetes",
    "esp": "gato",
    "img": "1573865526739-10659fec78a5",
    "d": "Con plataforma y juguete colgante.",
@@ -402,7 +430,7 @@ window.DATOS = {
   {
    "n": "Varita con Plumas para Gato",
    "p": 15.9,
-   "cat": "Juguetes",
+   "cat": "juguetes",
    "esp": "gato",
    "img": "1560114928-40f1f1eb26a0",
    "d": "Estimula el instinto de caza y el ejercicio.",
@@ -417,7 +445,7 @@ window.DATOS = {
   {
    "n": "Pelota Dental Resistente",
    "p": 19.9,
-   "cat": "Juguetes",
+   "cat": "juguetes",
    "esp": "perro",
    "img": "1493723258571-01372f1c5e04",
    "d": "Caucho natural, para mordedores fuertes.",
@@ -521,6 +549,249 @@ window.DATOS = {
    "tiktok": ""
   },
   "emergencias": true
+ },
+ "categorias": {
+  "productos": [
+   {
+    "id": "alimento",
+    "n": "Alimento",
+    "icon": "bag",
+    "orden": 1,
+    "visible": true
+   },
+   {
+    "id": "farmacia",
+    "n": "Farmacia",
+    "icon": "pill",
+    "orden": 2,
+    "visible": true
+   },
+   {
+    "id": "accesorios",
+    "n": "Accesorios",
+    "icon": "heart",
+    "orden": 3,
+    "visible": true
+   },
+   {
+    "id": "juguetes",
+    "n": "Juguetes",
+    "icon": "star",
+    "orden": 4,
+    "visible": true
+   },
+   {
+    "id": "higiene",
+    "n": "Higiene",
+    "icon": "sparkle",
+    "orden": 5,
+    "visible": true
+   }
+  ],
+  "servicios": [
+   {
+    "id": "salud",
+    "n": "Salud y prevención",
+    "icon": "steth",
+    "orden": 1,
+    "visible": true
+   },
+   {
+    "id": "estetica",
+    "n": "Estética y grooming",
+    "icon": "scissors",
+    "orden": 2,
+    "visible": true
+   },
+   {
+    "id": "cirugia",
+    "n": "Cirugía y especialidades",
+    "icon": "scalpel",
+    "orden": 3,
+    "visible": true
+   },
+   {
+    "id": "especiales",
+    "n": "Atención especial",
+    "icon": "home",
+    "orden": 4,
+    "visible": true
+   }
+  ]
+ },
+ "paginas": {
+  "menu": [
+   {
+    "id": "inicio",
+    "n": "Inicio",
+    "visible": true
+   },
+   {
+    "id": "servicios",
+    "n": "Servicios",
+    "visible": true
+   },
+   {
+    "id": "tienda",
+    "n": "Pet Shop",
+    "visible": true
+   },
+   {
+    "id": "citas",
+    "n": "Reservar cita",
+    "visible": true
+   },
+   {
+    "id": "mi-mascota",
+    "n": "Mi Mascota",
+    "visible": true
+   },
+   {
+    "id": "nosotros",
+    "n": "Nosotros",
+    "visible": true
+   },
+   {
+    "id": "contacto",
+    "n": "Contacto",
+    "visible": true
+   }
+  ],
+  "encabezados": {
+   "servicios": {
+    "pill": "Servicios",
+    "titulo": "Servicios veterinarios",
+    "tituloColor": "completos",
+    "texto": "Precios referenciales. El costo final depende de la evaluación y del tamaño de tu mascota."
+   },
+   "tienda": {
+    "pill": "Pet Shop",
+    "titulo": "Todo para tu",
+    "tituloColor": "perro y gato",
+    "texto": "Productos recomendados por nuestros veterinarios. Agrega al carrito y pide por WhatsApp: recojo en tienda o delivery."
+   },
+   "citas": {
+    "pill": "Citas online",
+    "titulo": "Reserva la cita de",
+    "tituloColor": "tu mascota",
+    "texto": "Elige el servicio, el día y un horario libre. Tu cita queda confirmada al instante."
+   },
+   "nosotros": {
+    "pill": "Nosotros",
+    "titulo": "Amamos a los animales",
+    "tituloColor": "tanto como tú",
+    "texto": "Desde 2014 cuidamos la salud de perros, gatos y mascotas exóticas en Lima."
+   },
+   "contacto": {
+    "pill": "Contacto",
+    "titulo": "Estamos para",
+    "tituloColor": "ayudarte",
+    "texto": "Visítanos, llámanos o escríbenos por WhatsApp. Para emergencias atendemos las 24 horas."
+   }
+  },
+  "inicio": [
+   {
+    "id": "accesos",
+    "n": "Accesos rápidos",
+    "visible": true
+   },
+   {
+    "id": "servicios",
+    "n": "Servicios",
+    "pill": "Servicios",
+    "titulo": "Todo lo que tu mascota necesita",
+    "tituloColor": "en un solo lugar",
+    "texto": "Medicina preventiva, estética y especialidades con precios claros.",
+    "visible": true
+   },
+   {
+    "id": "portal",
+    "n": "Portal Mi Mascota",
+    "pill": "Portal Mi Mascota",
+    "titulo": "Su salud,",
+    "tituloColor": "en tu celular",
+    "texto": "En tu primera visita te damos un código personal. Con él entras desde cualquier celular, sin contraseñas ni apps.",
+    "visible": true
+   },
+   {
+    "id": "emergencias",
+    "n": "Aviso de emergencias",
+    "titulo": "¿Tu mascota tiene una emergencia?",
+    "texto": "Atendemos las 24 horas, los 365 días. Llámanos o escríbenos y te guiamos mientras llegas.",
+    "visible": true
+   },
+   {
+    "id": "tienda",
+    "n": "Productos destacados",
+    "pill": "Pet Shop",
+    "titulo": "Lo más pedido",
+    "tituloColor": "esta semana",
+    "texto": "Alimento, farmacia y accesorios recomendados por nuestros veterinarios. Pide por WhatsApp.",
+    "visible": true
+   },
+   {
+    "id": "pasos",
+    "n": "Cómo reservar (pasos)",
+    "pill": "Así de fácil",
+    "titulo": "Tu cita en",
+    "tituloColor": "4 pasos",
+    "texto": "",
+    "visible": true
+   },
+   {
+    "id": "testimonios",
+    "n": "Testimonios",
+    "pill": "Opiniones",
+    "titulo": "Familias que",
+    "tituloColor": "confían en nosotros",
+    "texto": "Más de 3,000 mascotas atendidas con amor y profesionalismo.",
+    "visible": true
+   },
+   {
+    "id": "cta",
+    "n": "Llamado final",
+    "titulo": "Tu mascota merece el mejor cuidado",
+    "texto": "Reserva su cita en menos de un minuto y recibe recordatorios de vacunas, baños y controles.",
+    "visible": true
+   }
+  ],
+  "pie": {
+   "texto": "Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular."
+  },
+  "extras": [
+   {
+    "slug": "preguntas-frecuentes",
+    "n": "Preguntas frecuentes",
+    "enMenu": false,
+    "pill": "Ayuda",
+    "titulo": "Preguntas",
+    "tituloColor": "frecuentes",
+    "texto": "Resolvemos las dudas más comunes de nuestros clientes.",
+    "bloques": [
+     {
+      "titulo": "¿Necesito cita para una consulta?",
+      "texto": "Te recomendamos reservar online para no esperar. Las emergencias se atienden sin cita las 24 horas.",
+      "img": "",
+      "boton": "Reservar cita",
+      "enlace": "citas"
+     },
+     {
+      "titulo": "¿Cómo obtengo mi código de cliente?",
+      "texto": "Te lo damos en tu primera visita o al vincular tu primera reserva. Con él ves el historial, vacunas y pagos de tu mascota.",
+      "img": "",
+      "boton": "Ir a Mi Mascota",
+      "enlace": "mi-mascota"
+     },
+     {
+      "titulo": "¿Hacen delivery del Pet Shop?",
+      "texto": "Sí, enviamos a todo Lima. Agrega tus productos al carrito y envía tu pedido por WhatsApp.",
+      "img": "",
+      "boton": "Ver productos",
+      "enlace": "tienda"
+     }
+    ]
+   }
+  ]
  },
  "iconos": {
   "steth": "<path d=\"M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3\"/><circle cx=\"20\" cy=\"12\" r=\"2\"/>",
