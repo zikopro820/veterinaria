@@ -19,14 +19,14 @@
   <div class="demo-note demo-only">Sitio de demostración creado por <a href="https://ziko.pro" target="_blank" rel="noopener"><b>ziko.pro</b></a> · Los datos y precios son de ejemplo.</div>
   <div class="topbar">
     <div class="container">
-      <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
+      <span data-emerg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-aj="horario">Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span data-aj="deliveryTxt">Delivery gratis desde S/ 150</span></span>
     </div>
   </div>
   <header>
     <div class="container nav">
-      <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+      <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
       <ul class="menu" id="menu">
         <li><a href="./" class="active" aria-current="page">Inicio</a></li>
         <li><a href="servicios">Servicios</a></li>
@@ -47,21 +47,21 @@
   <section class="hero">
     <div class="container hero-grid">
       <div class="reveal">
-        <span class="pill coral"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg> Veterinaria · Pet Shop · Grooming</span>
-        <h1>Cuidamos a tu mascota <span>como parte de la familia</span></h1>
-        <p class="lead">Consultas, vacunas, baño y cirugía con veterinarios expertos. Reserva tu cita online y revisa el historial de tu mascota con tu código personal.</p>
+        <span class="pill coral"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg> <span id="hTag">Veterinaria · Pet Shop · Grooming</span></span>
+        <h1 id="hTitle">Cuidamos a tu mascota <span>como parte de la familia</span></h1>
+        <p class="lead" id="hText">Consultas, vacunas, baño y cirugía con veterinarios expertos. Reserva tu cita online y revisa el historial de tu mascota con tu código personal.</p>
         <div class="hero-actions">
           <a href="citas" class="btn btn-pri"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> Reservar cita</a>
           <a href="mi-mascota" class="btn btn-light"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg> Ver Mi Mascota</a>
         </div>
-        <div class="hero-trust">
+        <div class="hero-trust" id="hCifras">
           <div><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.5 13L17 22l-5-3-5 3 1.5-9"/></svg></i><div><b>12 años</b>de experiencia</div></div>
           <div><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><path d="M8 14c0-2 1.8-4 4-4s4 2 4 4c0 1.5 2 2.5 2 4.5S16.5 22 15 22c-1.2 0-2-.8-3-.8s-1.8.8-3 .8c-1.5 0-3-1.5-3-3.5S8 15.5 8 14z"/></svg></i><div><b>+3,000</b>mascotas felices</div></div>
           <div><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><b>24/7</b>emergencias</div></div>
         </div>
       </div>
       <div class="hero-visual reveal">
-        <div class="hero-photo"><img src="https://images.unsplash.com/photo-1770836037289-e00e5f351d11?auto=format&fit=crop&w=1000&q=80" alt="Veterinaria examinando a un perro" onerror="this.remove()"></div>
+        <div class="hero-photo" id="hPhoto"><img src="https://images.unsplash.com/photo-1770836037289-e00e5f351d11?auto=format&fit=crop&w=1000&q=80" alt="Veterinaria examinando a un perro" onerror="this.remove()"></div>
         <div class="float-card c1"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></i><div><b>Recordatorio</b><small>Rocky: vacuna en 2 días</small></div></div>
         <div class="float-card c2"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></i><div><b>Cita confirmada</b><small>Sáb · 10:30 h · Baño</small></div></div>
         <div class="float-card c3"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></i><div><b>Pedido en camino</b><small>Alimento 15 kg</small></div></div>
@@ -74,7 +74,7 @@
       <a href="citas"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></i><div><b>Reservar cita</b><span>Elige día y hora libre</span></div></a>
       <a href="mi-mascota"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg></i><div><b>Mi Mascota</b><span>Historial con tu código</span></div></a>
       <a href="tienda"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></svg></i><div><b>Pet Shop</b><span>Delivery a tu casa</span></div></a>
-      <a class="wa-link" href="#"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><b>Emergencias</b><span>Atención 24 horas</span></div></a>
+      <a class="wa-link" href="#" data-emerg><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><b>Emergencias</b><span>Atención 24 horas</span></div></a>
     </div>
   </div>
 
@@ -162,7 +162,7 @@
   <section>
     <div class="container">
 
-      <div class="emergency reveal">
+      <div class="emergency reveal" data-emerg>
         <div class="e-l"><i><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg></i><div><h3>¿Tu mascota tiene una emergencia?</h3><p>Atendemos las 24 horas, los 365 días. Llámanos o escríbenos y te guiamos mientras llegas.</p></div></div>
         <a class="btn wa-link" href="#"><svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5 2.5 1 3 .8 3.6.8.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 12 21.8zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg> Emergencia: <span data-aj="telefono">+51 987 654 321</span></a>
       </div>
@@ -205,7 +205,7 @@
         <h2>Familias que <span class="c-pri">confían en nosotros</span></h2>
         <p>Más de 3,000 mascotas atendidas con amor y profesionalismo.</p>
       </div>
-      <div class="testis">
+      <div class="testis" data-testis>
         <figure class="testi reveal"><div class="stars">★★★★★</div><blockquote>"Agendé la cita de Rocky desde el celular en un minuto, y con el código veo cuándo le toca su vacuna. ¡Ya no se me olvida nada!"</blockquote>
           <figcaption class="testi-who"><span class="av">ML</span><div><b>María López</b><span>Dueña de Rocky y Luna</span></div></figcaption></figure>
         <figure class="testi reveal"><div class="stars">★★★★★</div><blockquote>"Max tuvo una emergencia un domingo en la noche y nos atendieron al toque. El equipo es súper cariñoso y explica todo."</blockquote>
@@ -236,12 +236,12 @@
   <footer>
     <div class="container foot">
       <div>
-        <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+        <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
         <p>Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular.</p>
         <div class="socials">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
-          <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
+          <a href="#" data-red="facebook" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
+          <a href="#" data-red="instagram" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
+          <a href="#" data-red="tiktok" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
         </div>
       </div>
       <div>
@@ -271,7 +271,7 @@
       </div>
     </div>
     <div class="container foot-bottom">
-      <span>© 2026 Huellitas Veterinaria &amp; Pet Shop · Demo</span>
+      <span>© 2026 <span data-nombre>Huellitas</span> · <span data-eslogan>Veterinaria &amp; Pet Shop</span></span>
       <span>Web creada por <a href="https://ziko.pro" target="_blank" rel="noopener">ziko.pro</a></span>
     </div>
   </footer>

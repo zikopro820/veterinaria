@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reservar cita | Huellitas Veterinaria</title>
-  <meta name="description" content="Reserva la cita de tu mascota online: elige servicio, día y horario disponible y confirma por WhatsApp.">
+  <meta name="description" content="Reserva la cita de tu mascota online: elige servicio, día y un horario libre, y tu cita queda confirmada al instante.">
   <meta name="theme-color" content="#5b3df5">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,14 +19,14 @@
   <div class="demo-note demo-only">Sitio de demostración creado por <a href="https://ziko.pro" target="_blank" rel="noopener"><b>ziko.pro</b></a> · Los datos y precios son de ejemplo.</div>
   <div class="topbar">
     <div class="container">
-      <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
+      <span data-emerg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-aj="horario">Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span data-aj="deliveryTxt">Delivery gratis desde S/ 150</span></span>
     </div>
   </div>
   <header>
     <div class="container nav">
-      <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+      <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
       <ul class="menu" id="menu">
         <li><a href="./">Inicio</a></li>
         <li><a href="servicios">Servicios</a></li>
@@ -48,7 +48,7 @@
     <div class="container">
       <span class="pill"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> Citas online</span>
       <h1>Reserva la cita de <span class="c-pri">tu mascota</span></h1>
-      <p>Elige el servicio, el día y un horario libre. Te confirmamos por WhatsApp en minutos.</p>
+      <p>Elige el servicio, el día y un horario libre. Tu cita queda confirmada al instante.</p>
     </div>
   </section>
 
@@ -68,6 +68,13 @@
         </div>
 
         <span class="f-label">2. Tu mascota *</span>
+        <div class="code-row">
+          <input name="codigo" placeholder="¿Ya eres cliente? Tu código (ej. HV-7K3P9)" aria-label="Código de cliente" autocomplete="off">
+          <button type="button" class="btn btn-light btn-sm" id="codeBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg> Buscar</button>
+        </div>
+        <p class="code-msg" id="codeMsg"></p>
+        <div class="pet-pick" id="petPick"></div>
+        <input type="hidden" name="mascotaId">
         <div class="opts two" style="margin-bottom:12px">
           <label class="opt"><input type="radio" name="especie" value="Perro" checked required><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5.2C10 3.9 8.9 2.8 7.6 3c-2 .3-4.2 2.5-4.6 4.6-.3 1.5.6 2.4 2 2.4M14 5.2c0-1.3 1.1-2.4 2.4-2.2 2 .3 4.2 2.5 4.6 4.6.3 1.5-.6 2.4-2 2.4"/><path d="M8 14v.5M16 14v.5M11.3 17h1.4L12 18z"/><path d="M4.4 11.1C4.2 12 4 13 4 14c0 4.4 3.6 7 8 7s8-2.6 8-7c0-1-.2-2-.4-2.9M7 7.5C8.4 6 10.2 5 12 5s3.6 1 5 2.5"/></svg>Perro</span></label>
           <label class="opt"><input type="radio" name="especie" value="Gato"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c.7 0 1.3.1 2 .2C15.6 3.5 18.3 1.8 20 2c.5 1.9-.3 5 .3 6.7.8 1.1 1.2 2.4 1.2 3.8C21.5 17.3 17.2 21 12 21s-9.5-3.7-9.5-8.5c0-1.4.4-2.7 1.2-3.8C4.3 7 3.5 3.9 4 2c1.7-.2 4.4 1.5 6 3.2.7-.1 1.3-.2 2-.2z"/><path d="M8 14v.5M16 14v.5M11.3 16.8h1.4L12 18z"/></svg>Gato</span></label>
@@ -81,19 +88,19 @@
         <span class="f-label">3. Elige el día y la hora *</span>
         <div class="f-grid" style="margin-bottom:12px"><input type="date" name="fecha" required aria-label="Fecha de la cita" class="full"></div>
         <div class="slots" id="slots" tabindex="-1"></div>
-        <div class="slot-legend"><span><i></i>Disponible</span><span class="b"><i></i>Elegido</span><span class="c"><i></i>Ocupado</span></div>
+        <div class="slot-legend"><span><i></i>Disponible</span><span class="b"><i></i>Elegido</span></div>
 
         <span class="f-label">4. Tus datos *</span>
         <div class="f-grid">
           <input name="nombre" placeholder="Nombre y apellido *" required aria-label="Nombre y apellido">
           <input name="celular" type="tel" inputmode="tel" maxlength="15" placeholder="Celular *" required aria-label="Celular">
-          <input name="codigo" placeholder="Código de cliente (si ya tienes)" aria-label="Código de cliente" style="text-transform:uppercase">
           <input name="motivo" placeholder="Motivo o síntomas (opcional)" aria-label="Motivo">
         </div>
-        <label class="f-check"><input type="checkbox" required> <span>Acepto que Huellitas use mis datos para gestionar la cita y enviarme recordatorios.</span></label>
-        <button type="submit" class="btn btn-pri btn-block"><svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5.3-.5c.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5 2.5 1 3 .8 3.6.8.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 1 1 12 21.8zM12 0a12 12 0 0 0-10.3 18L0 24l6.2-1.6A12 12 0 1 0 12 0z"/></svg> Reservar por WhatsApp</button>
+        <label class="f-check"><input type="checkbox" required> <span>Acepto que <span data-nombre>Huellitas</span> use mis datos para gestionar la cita y enviarme recordatorios.</span></label>
+        <button type="submit" class="btn btn-pri btn-block" id="bookBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg> Confirmar mi cita</button>
         <p class="f-msg" role="status"></p>
       </form>
+      <div class="form-card book-ok" id="bookOk" hidden></div>
 
       <aside class="summary">
         <h3>Resumen de tu cita</h3>
@@ -101,9 +108,9 @@
         <div class="sum-row"><span>Mascota</span><b id="sPet">—</b></div>
         <div class="sum-row"><span>Fecha</span><b id="sDate">—</b></div>
         <div class="sum-row"><span>Hora</span><b id="sHour">—</b></div>
-        <div class="sum-row"><span>Sede</span><b>Miraflores</b></div>
+        <div class="sum-row"><span>Dirección</span><b data-aj="direccion">Av. Larco 1234, Miraflores, Lima</b></div>
         <div class="sum-total"><span>Precio referencial</span><b id="sPrice">—</b></div>
-        <p class="note"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg> Te enviaremos un recordatorio por WhatsApp un día antes. Llega 10 minutos antes con el carnet de tu mascota.</p>
+        <p class="note"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg> Tu cita queda confirmada al instante. Te enviaremos un recordatorio por WhatsApp. Llega 10 minutos antes con el carnet de tu mascota.</p>
         <a href="mi-mascota" class="btn btn-glass btn-block"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg> ¿Ya tienes código? Ver tus citas</a>
       </aside>
     </div>
@@ -113,12 +120,12 @@
   <footer>
     <div class="container foot">
       <div>
-        <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+        <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
         <p>Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular.</p>
         <div class="socials">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
-          <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
+          <a href="#" data-red="facebook" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
+          <a href="#" data-red="instagram" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
+          <a href="#" data-red="tiktok" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
         </div>
       </div>
       <div>
@@ -148,7 +155,7 @@
       </div>
     </div>
     <div class="container foot-bottom">
-      <span>© 2026 Huellitas Veterinaria &amp; Pet Shop · Demo</span>
+      <span>© 2026 <span data-nombre>Huellitas</span> · <span data-eslogan>Veterinaria &amp; Pet Shop</span></span>
       <span>Web creada por <a href="https://ziko.pro" target="_blank" rel="noopener">ziko.pro</a></span>
     </div>
   </footer>

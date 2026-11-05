@@ -14,7 +14,9 @@ window.DATOS = {
   "cierra": "19:00",
   "domingoCierra": "13:00",
   "delivery": 10,
-  "deliveryGratis": 150
+  "deliveryGratis": 150,
+  "capacidad": 1,
+  "turno": 30
  },
  "servicios": [
   {
@@ -428,6 +430,98 @@ window.DATOS = {
    "stock": "disponible"
   }
  ],
+ "web": {
+  "marca": {
+   "logo": "",
+   "nombre1": "Huell",
+   "nombre2": "itas",
+   "eslogan": "Veterinaria & Pet Shop",
+   "color1": "#5b3df5",
+   "color2": "#ff6b4a"
+  },
+  "portada": {
+   "etiqueta": "Veterinaria · Pet Shop · Grooming",
+   "titulo": "Cuidamos a tu mascota",
+   "tituloColor": "como parte de la familia",
+   "texto": "Consultas, vacunas, baño y cirugía con veterinarios expertos. Reserva tu cita online y revisa el historial de tu mascota con tu código personal.",
+   "foto": "1770836037289-e00e5f351d11",
+   "cifras": [
+    {
+     "n": "12 años",
+     "t": "de experiencia"
+    },
+    {
+     "n": "+3,000",
+     "t": "mascotas felices"
+    },
+    {
+     "n": "24/7",
+     "t": "emergencias"
+    }
+   ]
+  },
+  "nosotros": {
+   "titulo": "Medicina veterinaria",
+   "tituloColor": "con corazón",
+   "foto": "1700665537604-412e89a285c3",
+   "texto": "Empezamos como un pequeño consultorio de barrio y hoy somos una clínica completa con quirófano, laboratorio, grooming y pet shop. Lo que no cambió: tratamos a cada mascota como si fuera nuestra.",
+   "puntos": [
+    "Veterinarios colegiados y en capacitación constante",
+    "Equipos modernos: ecógrafo, rayos X digital y laboratorio propio",
+    "Historial clínico digital al que accedes con tu código",
+    "Precios claros, sin sorpresas"
+   ]
+  },
+  "equipo": [
+   {
+    "n": "Dra. Carla Méndez",
+    "cargo": "Medicina general y dermatología",
+    "d": "CMVP 4521 · 10 años cuidando perros y gatos.",
+    "foto": ""
+   },
+   {
+    "n": "Dr. Andrés Salas",
+    "cargo": "Cirugía y odontología",
+    "d": "CMVP 5873 · Especialista en cirugía de tejidos blandos.",
+    "foto": ""
+   },
+   {
+    "n": "Dra. Paola Gutiérrez",
+    "cargo": "Felinos y exóticos",
+    "d": "CMVP 6210 · Atención amigable para gatos.",
+    "foto": ""
+   },
+   {
+    "n": "Luis Ríos",
+    "cargo": "Grooming y estética",
+    "d": "Peluquero canino certificado · 8 años de experiencia.",
+    "foto": ""
+   }
+  ],
+  "testimonios": [
+   {
+    "q": "Agendé la cita de Rocky desde el celular en un minuto, y con el código veo cuándo le toca su vacuna. ¡Ya no se me olvida nada!",
+    "n": "María López",
+    "r": "Dueña de Rocky y Luna"
+   },
+   {
+    "q": "Max tuvo una emergencia un domingo en la noche y nos atendieron al toque. El equipo es súper cariñoso y explica todo.",
+    "n": "Jorge Ramos",
+    "r": "Dueño de Max"
+   },
+   {
+    "q": "Pido el alimento de mis gatos por WhatsApp y me llega a la casa. Precios justos y siempre hay stock.",
+    "n": "Claudia Vargas",
+    "r": "Dueña de Michi y Toby"
+   }
+  ],
+  "redes": {
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  "emergencias": true
+ },
  "iconos": {
   "steth": "<path d=\"M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3\"/><circle cx=\"20\" cy=\"12\" r=\"2\"/>",
   "syringe": "<path d=\"M18 2l4 4M17 7l3-3M19 9L8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6\"/>",

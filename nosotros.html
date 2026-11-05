@@ -19,14 +19,14 @@
   <div class="demo-note demo-only">Sitio de demostración creado por <a href="https://ziko.pro" target="_blank" rel="noopener"><b>ziko.pro</b></a> · Los datos y precios son de ejemplo.</div>
   <div class="topbar">
     <div class="container">
-      <span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
+      <span data-emerg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 5.2l1.4 1.4M19.8 5.2l-1.4 1.4M2 12h2M20 12h2"/></svg> <b>Emergencias 24 horas:</b> <a class="wa-link" href="#" data-aj="telefono">+51 987 654 321</a></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-aj="horario">Lun a Sáb 9:00 – 19:00 · Dom 9:00 – 13:00</span></span>
       <span class="hide-m"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span data-aj="deliveryTxt">Delivery gratis desde S/ 150</span></span>
     </div>
   </div>
   <header>
     <div class="container nav">
-      <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+      <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
       <ul class="menu" id="menu">
         <li><a href="./">Inicio</a></li>
         <li><a href="servicios">Servicios</a></li>
@@ -54,17 +54,12 @@
 
   <section>
     <div class="container split">
-      <div class="split-img reveal"><img src="https://images.unsplash.com/photo-1700665537604-412e89a285c3?auto=format&fit=crop&w=900&q=80" alt="Familia con su perro en la veterinaria" loading="lazy" onerror="this.remove()"></div>
+      <div class="split-img reveal" id="nPhoto"><img src="https://images.unsplash.com/photo-1700665537604-412e89a285c3?auto=format&fit=crop&w=900&q=80" alt="Familia con su perro en la veterinaria" loading="lazy" onerror="this.remove()"></div>
       <div class="reveal">
         <span class="pill"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.5 13L17 22l-5-3-5 3 1.5-9"/></svg> Nuestra historia</span>
-        <div class="sec-head" style="margin:0"><h2>Medicina veterinaria <span class="c-pri">con corazón</span></h2>
-        <p>Empezamos como un pequeño consultorio de barrio y hoy somos una clínica completa con quirófano, laboratorio, grooming y pet shop. Lo que no cambió: tratamos a cada mascota como si fuera nuestra.</p></div>
-        <ul class="checks">
-          <li>Veterinarios colegiados y en capacitación constante</li>
-          <li>Equipos modernos: ecógrafo, rayos X digital y laboratorio propio</li>
-          <li>Historial clínico digital al que accedes con tu código</li>
-          <li>Precios claros, sin sorpresas</li>
-        </ul>
+        <div class="sec-head" style="margin:0"><h2 id="nTitle">Medicina veterinaria <span class="c-pri">con corazón</span></h2>
+        <p id="nText">Empezamos como un pequeño consultorio de barrio y hoy somos una clínica completa con quirófano, laboratorio, grooming y pet shop. Lo que no cambió: tratamos a cada mascota como si fuera nuestra.</p></div>
+        <ul class="checks" id="nPuntos"><li>Veterinarios colegiados y en capacitación constante</li><li>Equipos modernos: ecógrafo, rayos X digital y laboratorio propio</li><li>Historial clínico digital al que accedes con tu código</li><li>Precios claros, sin sorpresas</li></ul>
         <a href="citas" class="btn btn-pri"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> Reservar una cita</a>
       </div>
     </div>
@@ -72,7 +67,7 @@
   <section class="bg-soft">
     <div class="container">
       <div class="sec-head center reveal"><span class="pill coral"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M1 21a8 8 0 0 1 16 0M17 4a4 4 0 0 1 0 8M23 21a8 8 0 0 0-5-7.4"/></svg> Equipo</span><h2>Conoce a <span class="c-pri">nuestro equipo</span></h2></div>
-      <div class="team">
+      <div class="team" id="team">
         <div class="doc reveal"><div class="av">CM</div><h3>Dra. Carla Méndez</h3><span>Medicina general y dermatología</span><p>CMVP 4521 · 10 años cuidando perros y gatos.</p></div>
         <div class="doc reveal"><div class="av">AS</div><h3>Dr. Andrés Salas</h3><span>Cirugía y odontología</span><p>CMVP 5873 · Especialista en cirugía de tejidos blandos.</p></div>
         <div class="doc reveal"><div class="av">PG</div><h3>Dra. Paola Gutiérrez</h3><span>Felinos y exóticos</span><p>CMVP 6210 · Atención amigable para gatos.</p></div>
@@ -88,7 +83,7 @@
         <h2>Familias que <span class="c-pri">confían en nosotros</span></h2>
         <p>Más de 3,000 mascotas atendidas con amor y profesionalismo.</p>
       </div>
-      <div class="testis">
+      <div class="testis" data-testis>
         <figure class="testi reveal"><div class="stars">★★★★★</div><blockquote>"Agendé la cita de Rocky desde el celular en un minuto, y con el código veo cuándo le toca su vacuna. ¡Ya no se me olvida nada!"</blockquote>
           <figcaption class="testi-who"><span class="av">ML</span><div><b>María López</b><span>Dueña de Rocky y Luna</span></div></figcaption></figure>
         <figure class="testi reveal"><div class="stars">★★★★★</div><blockquote>"Max tuvo una emergencia un domingo en la noche y nos atendieron al toque. El equipo es súper cariñoso y explica todo."</blockquote>
@@ -119,12 +114,12 @@
   <footer>
     <div class="container foot">
       <div>
-        <a href="./" class="brand" aria-label="Huellitas inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
+        <a href="./" class="brand" data-brand aria-label="Inicio"><span class="paw"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="6" cy="9" rx="2.2" ry="2.8"/><ellipse cx="10" cy="5" rx="2.2" ry="2.8"/><ellipse cx="14.5" cy="5" rx="2.2" ry="2.8"/><ellipse cx="18.5" cy="9" rx="2.2" ry="2.8"/><path d="M12.2 11c-3 0-6.2 4.2-6.2 7 0 1.8 1.4 3 3.1 3 1.4 0 2.1-.8 3.1-.8s1.7.8 3.1.8c1.7 0 3.1-1.2 3.1-3 0-2.8-3.2-7-6.2-7z"/></svg></span><span>Huell<b>itas</b><small>Veterinaria &amp; Pet Shop</small></span></a>
         <p>Medicina veterinaria con cariño, pet shop y portal digital para que sigas la salud de tu mascota desde el celular.</p>
         <div class="socials">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
-          <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
+          <a href="#" data-red="facebook" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14 8V6c0-.8.5-1 1-1h2V2h-3c-3 0-4 2-4 4v2H8v3h2v11h4V11h3l.5-3z"/></svg></a>
+          <a href="#" data-red="instagram" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm5.5-9.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5zm3 15a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"/></svg></a>
+          <a href="#" data-red="tiktok" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.3 7.3 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg></a>
         </div>
       </div>
       <div>
@@ -154,7 +149,7 @@
       </div>
     </div>
     <div class="container foot-bottom">
-      <span>© 2026 Huellitas Veterinaria &amp; Pet Shop · Demo</span>
+      <span>© 2026 <span data-nombre>Huellitas</span> · <span data-eslogan>Veterinaria &amp; Pet Shop</span></span>
       <span>Web creada por <a href="https://ziko.pro" target="_blank" rel="noopener">ziko.pro</a></span>
     </div>
   </footer>

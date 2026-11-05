@@ -53,36 +53,46 @@ function toast(t) {
    DATOS: Firebase → panel en modo demo (mismo navegador) → datos.js
    ========================================================= */
 const ordenar = l => l.slice().sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999) || String(a.n).localeCompare(String(b.n)));
+let FBX = null;   // { fs, db } cuando Firebase está conectado
+async function fb() {
+  if (FBX) return FBX;
+  const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
+  const [app, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
+  FBX = { fs, db: fs.getFirestore(app.getApps().length ? app.getApp() : app.initializeApp(FB_CFG)) };
+  return FBX;
+}
+const localDB = () => store.get("hv_db", null);
+const mezclar = (a, b) => { const o = { ...a }; for (const k in (b || {})) o[k] = (b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && a && a[k]) ? { ...a[k], ...b[k] } : b[k]; return o; };
 let DATA = null;
 async function cargarDatos() {
   if (DATA) return DATA;
-  let prod = null, serv = null, aj = null;
+  let prod = null, serv = null, aj = null, web = null;
   try {
     if (EN_VIVO) {
       let cache = null; try { cache = JSON.parse(sessionStorage.getItem("hv_cache")); } catch (e) {}
-      if (cache && Date.now() - cache.t < 5 * 60 * 1000) ({ prod, serv, aj } = cache);
+      if (cache && cache.v === 2 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web } = cache);
       else {
-        const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
-        const [app, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
-        const db = fs.getFirestore(app.getApps().length ? app.getApp() : app.initializeApp(FB_CFG));
-        const [p, s, a] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")), fs.getDoc(fs.doc(db, "ajustes", "general"))]);
-        prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id })); aj = a.exists() ? a.data() : null;
-        try { sessionStorage.setItem("hv_cache", JSON.stringify({ t: Date.now(), prod, serv, aj })); } catch (e) {}
+        const { fs, db } = await fb();
+        const [p, s, a, w] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
+          fs.getDoc(fs.doc(db, "ajustes", "general")), fs.getDoc(fs.doc(db, "ajustes", "web"))]);
+        prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id }));
+        aj = a.exists() ? a.data() : null; web = w.exists() ? w.data() : null;
+        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 2, t: Date.now(), prod, serv, aj, web })); } catch (e) {}
       }
     } else {
-      const local = store.get("hv_db", null);   // datos del panel en MODO DEMO (mismo navegador)
+      const local = localDB();
       if (local) {
         if (local.productos) prod = Object.entries(local.productos).map(([id, x]) => ({ ...x, id }));
         if (local.servicios) serv = Object.entries(local.servicios).map(([id, x]) => ({ ...x, id }));
-        if (local.ajustes) aj = local.ajustes;
+        aj = local.ajustes || null; web = local.web || null;
       }
     }
   } catch (e) { console.warn("No se pudieron leer los datos; se usan los de ejemplo.", e); }
-  // Si la base está vacía se muestran los datos de ejemplo (datos.js)
   DATA = {
     productos: ordenar(prod && prod.length ? prod : D0.productos).filter(x => x.visible !== false),
     servicios: ordenar(serv && serv.length ? serv : D0.servicios).filter(x => x.visible !== false),
     ajustes: { ...D0.ajustes, ...(aj || {}) },
+    web: mezclar(D0.web || {}, web),
   };
   return DATA;
 }
@@ -99,6 +109,49 @@ function aplicarAjustes(a) {
   };
   $$("[data-aj]").forEach(x => { const v = t[x.dataset.aj]; if (v != null && v !== "") x.textContent = v; });
   const m = $("#mapa"); if (m && a.direccion) { const src = "https://www.google.com/maps?q=" + encodeURIComponent(a.direccion) + "&output=embed"; if (m.src !== src) m.src = src; }
+}
+
+/* =========================================================
+   PERSONALIZACIÓN (logo, nombre, colores, portada, nosotros...)
+   ========================================================= */
+let NOMBRE = "Huellitas";
+function hexMix(hex, to, p) {   // mezcla un color con blanco/negro para crear tonos
+  const h = String(hex || "").replace("#", ""); if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+  const c = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)), t = to === "w" ? 255 : 0;
+  return "#" + c.map(v => Math.round(v + (t - v) * p).toString(16).padStart(2, "0")).join("");
+}
+const iniciales = n => String(n || "").replace(/^(Dra?\.)\s*/i, "").split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+function aplicarWeb(w) {
+  const m = w.marca || {};
+  NOMBRE = ((m.nombre1 || "") + (m.nombre2 || "")).trim() || NOMBRE;
+  const logo = m.logo ? `<span class="paw logo-img"><img src="${esc(foto(m.logo, 200))}" alt="Logo ${esc(NOMBRE)}"></span>` : `<span class="paw">${$(".brand .paw svg")?.outerHTML || ""}</span>`;
+  $$("[data-brand]").forEach(b => { b.innerHTML = `${logo}<span>${esc(m.nombre1 || "")}<b>${esc(m.nombre2 || "")}</b><small>${esc(m.eslogan || "")}</small></span>`; b.setAttribute("aria-label", NOMBRE + " inicio"); });
+  $$("[data-nombre]").forEach(x => x.textContent = NOMBRE);
+  $$("[data-eslogan]").forEach(x => x.textContent = m.eslogan || "");
+  document.title = document.title.replace(/Huellitas/g, NOMBRE);
+  const r = document.documentElement.style, c1 = m.color1, c2 = m.color2;
+  if (hexMix(c1, "w", 0)) { r.setProperty("--pri", c1); r.setProperty("--pri-2", hexMix(c1, "w", .25)); r.setProperty("--pri-soft", hexMix(c1, "w", .9)); $('meta[name="theme-color"]')?.setAttribute("content", c1); }
+  if (hexMix(c2, "w", 0)) { r.setProperty("--coral", c2); r.setProperty("--coral-2", hexMix(c2, "w", .2)); }
+  const p = w.portada || {};
+  if ($("#hTitle")) {
+    $("#hTag").textContent = p.etiqueta || ""; $("#hText").textContent = p.texto || "";
+    $("#hTitle").innerHTML = `${esc(p.titulo || "")} <span>${esc(p.tituloColor || "")}</span>`;
+    if (p.foto) { const im = $("#hPhoto img"); const src = foto(p.foto, 1000); if (!im) $("#hPhoto").innerHTML = `<img src="${esc(src)}" alt="">`; else if (im.getAttribute("src") !== src) im.src = src; }
+    (p.cifras || []).forEach((c, i) => { const d = $$("#hCifras > div")[i]; if (d) { const t = d.querySelector("div"); t.innerHTML = `<b>${esc(c.n)}</b>${esc(c.t)}`; d.style.display = c.n ? "" : "none"; } });
+  }
+  const n = w.nosotros || {};
+  if ($("#nTitle")) {
+    $("#nTitle").innerHTML = `${esc(n.titulo || "")} <span class="c-pri">${esc(n.tituloColor || "")}</span>`;
+    $("#nText").textContent = n.texto || "";
+    $("#nPuntos").innerHTML = (n.puntos || []).filter(Boolean).map(x => `<li>${esc(x)}</li>`).join("");
+    if (n.foto) $("#nPhoto").innerHTML = `<img src="${esc(foto(n.foto, 900))}" alt="">`;
+  }
+  if ($("#team") && w.equipo) { $("#team").innerHTML = w.equipo.map(x => `<div class="doc reveal"><div class="av">${x.foto ? `<img src="${esc(foto(x.foto, 300))}" alt="">` : esc(iniciales(x.n))}</div><h3>${esc(x.n)}</h3><span>${esc(x.cargo)}</span><p>${esc(x.d)}</p></div>`).join(""); revealAll($("#team")); }
+  if (w.testimonios) $$("[data-testis]").forEach(t => { t.innerHTML = w.testimonios.map(x => `<figure class="testi reveal"><div class="stars">★★★★★</div><blockquote>"${esc(x.q)}"</blockquote><figcaption class="testi-who"><span class="av">${esc(iniciales(x.n))}</span><div><b>${esc(x.n)}</b><span>${esc(x.r)}</span></div></figcaption></figure>`).join(""); revealAll(t); });
+  const rd = w.redes || {};
+  $$("[data-red]").forEach(a => { const u = rd[a.dataset.red]; if (u) { a.href = /^https?:/.test(u) ? u : "https://" + u; a.style.display = ""; } else a.style.display = "none"; });
+  $$(".socials").forEach(s => s.style.display = Object.values(rd).some(Boolean) ? "" : "none");
+  $$("[data-emerg]").forEach(x => x.style.display = w.emergencias === false ? "none" : "");
 }
 
 /* =========================================================
@@ -217,38 +270,95 @@ function pintarTienda() {
 }
 
 /* =========================================================
-   RESERVA DE CITAS
+   AGENDA: horarios libres reales y reserva
+   turnos/{fecha_hora_n}  → lugar ocupado (sin datos personales)
+   citas/{mismo id}       → la cita completa (solo la ve el panel)
+   clientes/{código}/agenda/{id} → copia que ve el cliente en Mi Mascota
    ========================================================= */
+const pad2 = n => String(n).padStart(2, "0");
+const isoD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const aMin = t => { const [h, m] = String(t || "0:00").split(":").map(Number); return h * 60 + (m || 0); };
+const aHora = m => pad2(Math.floor(m / 60)) + ":" + pad2(m % 60);
+function horasDelDia(fecha) {
+  const d = new Date(fecha + "T12:00"), dom = d.getDay() === 0;
+  const fin = dom ? AJ.domingoCierra : AJ.cierra; if (!fin) return [];
+  const paso = +AJ.turno || 30, out = [];
+  for (let t = aMin(AJ.abre); t + paso <= aMin(fin); t += paso) out.push(aHora(t));
+  return out;
+}
+async function ocupadosDe(fecha) {   // { "10:30": 2, ... }
+  const cnt = {};
+  if (EN_VIVO) {
+    const { fs, db } = await fb();
+    const s = await fs.getDocs(fs.query(fs.collection(db, "turnos"), fs.where("fecha", "==", fecha)));
+    s.docs.forEach(d => { const h = d.data().hora; cnt[h] = (cnt[h] || 0) + 1; });
+  } else {
+    Object.values((localDB() || {}).turnos || {}).forEach(t => { if (t.fecha === fecha) cnt[t.hora] = (cnt[t.hora] || 0) + 1; });
+  }
+  return cnt;
+}
+async function buscarCliente(code) {   // → { dueno, mascotas:[{id,nombre,especie,raza}] } | null
+  if (EN_VIVO) {
+    const { fs, db } = await fb();
+    const c = await fs.getDoc(fs.doc(db, "clientes", code)); if (!c.exists()) return null;
+    const ms = await fs.getDocs(fs.collection(db, "clientes", code, "mascotas"));
+    return { dueno: c.data().dueno || "", mascotas: ms.docs.map(d => ({ id: d.id, ...d.data() })) };
+  }
+  const c = ((localDB() || {}).clientes || {})[code]; if (!c) return null;
+  return { dueno: c.dueno, mascotas: Object.entries(c.mascotas || {}).map(([id, m]) => ({ id, ...m })) };
+}
+async function reservar(base) {   // intenta ocupar un lugar libre del horario; devuelve el id de la cita
+  const cap = Math.max(1, +AJ.capacidad || 1), pub = base.code && base.mascotaId;
+  const agenda = { fecha: base.fecha, hora: base.hora, servicio: base.servicio, precio: base.precio, mascota: base.mascota, mascotaId: base.mascotaId, total: base.precio, pagado: 0, estadoPago: "pendiente", estado: "confirmada", creado: base.creado };
+  for (let k = 1; k <= cap; k++) {
+    const id = `${base.fecha}_${base.hora}_${k}`;
+    if (EN_VIVO) {
+      const { fs, db } = await fb();
+      try {
+        const b = fs.writeBatch(db);
+        b.set(fs.doc(db, "turnos", id), { fecha: base.fecha, hora: base.hora, k, creado: base.creado });
+        b.set(fs.doc(db, "citas", id), { ...base, k });
+        if (pub) b.set(fs.doc(db, "clientes", base.code, "agenda", id), agenda);
+        await b.commit(); return id;
+      } catch (e) { if (!/permission|exists/i.test(e.code || e.message)) throw e; }   // ese lugar ya se ocupó: probamos el siguiente
+    } else {
+      const d = localDB() || { clientes: {} }; d.turnos = d.turnos || {}; d.citas = d.citas || {};
+      if (d.turnos[id]) continue;
+      d.turnos[id] = { fecha: base.fecha, hora: base.hora, k, creado: base.creado };
+      d.citas[id] = { ...base, k };
+      store.set("hv_db", d); return id;
+    }
+  }
+  return null;
+}
+
 function iniciarCitas(servicios) {
   const book = $("#bookForm"); if (!book) return;
   const opts = $("#svcOpts"), res = servicios.filter(x => x.reservable !== false);
-  if (opts && res.length) opts.innerHTML = res.map((x, i) => `<label class="opt"><input type="radio" name="servicio" value="${esc(x.n)}" data-key="${esc(x.id)}" data-price="${+x.p ? "Desde " + precio(x.p) : "Consultar"}" required${i === 0 ? " checked" : ""}><span>${icono(x.icon)}${esc(x.n)}<small>${+x.p ? "desde " + precio(x.p) : "a consultar"}</small></span></label>`).join("");
+  if (opts && res.length) opts.innerHTML = res.map((x, i) => `<label class="opt"><input type="radio" name="servicio" value="${esc(x.n)}" data-key="${esc(x.id)}" data-p="${+x.p || 0}" data-price="${+x.p ? "Desde " + precio(x.p) : "Consultar"}" required${i === 0 ? " checked" : ""}><span>${icono(x.icon)}${esc(x.n)}<small>${+x.p ? "desde " + precio(x.p) : "a consultar"}</small></span></label>`).join("");
   const dateIn = $("[name=fecha]", book), slotsBox = $("#slots");
-  const pad = n => String(n).padStart(2, "0");
-  const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  dateIn.min = iso(new Date());
-  const max = new Date(); max.setDate(max.getDate() + 45); dateIn.max = iso(max);
-  let slot = "";
+  dateIn.min = isoD(new Date());
+  const max = new Date(); max.setDate(max.getDate() + 60); dateIn.max = isoD(max);
+  let slot = "", cliente = null;
   const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const nice = s => { const d = new Date(s + "T12:00"); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
-  const min = t => { const [h, m] = String(t || "0:00").split(":").map(Number); return h * 60 + (m || 0); };
-  // Demo: algunos horarios aparecen ocupados (en la versión real vendrían de la agenda del panel)
-  const busy = (s, h) => { let x = 0; for (const c of s + h) x = (x * 31 + c.charCodeAt(0)) % 997; return x % 3 === 0; };
-  function drawSlots() {
+  let pedido = 0;
+  async function drawSlots() {
     slot = ""; updateSum();
     if (!dateIn.value) { slotsBox.innerHTML = `<p class="slots-msg">Primero elige una fecha para ver los horarios disponibles.</p>`; return; }
-    const d = new Date(dateIn.value + "T12:00"), sun = d.getDay() === 0;
-    if (sun && !AJ.domingoCierra) { slotsBox.innerHTML = `<p class="slots-msg">Los domingos no atendemos citas. Para emergencias escríbenos por WhatsApp.</p>`; return; }
-    const hours = []; for (let t = min(AJ.abre); t + 30 <= min(sun ? AJ.domingoCierra : AJ.cierra); t += 30) hours.push(pad(Math.floor(t / 60)) + ":" + pad(t % 60));
-    const now = new Date(), isToday = dateIn.value === iso(now);
-    slotsBox.innerHTML = hours.map(h => {
-      const past = isToday && min(h) <= now.getHours() * 60 + now.getMinutes() + 30;
-      return `<button type="button" class="slot" data-h="${h}" ${past || busy(dateIn.value, h) ? "disabled" : ""}>${h}</button>`;
-    }).join("") + (sun ? `<p class="slots-msg">Domingos atendemos de ${esc(AJ.abre)} a ${esc(AJ.domingoCierra)}. Emergencias las 24 horas.</p>` : "");
+    const fecha = dateIn.value, horas = horasDelDia(fecha), n = ++pedido;
+    if (!horas.length) { slotsBox.innerHTML = `<p class="slots-msg">Ese día no atendemos citas. Para emergencias escríbenos por WhatsApp.</p>`; return; }
+    slotsBox.innerHTML = `<p class="slots-msg">Buscando horarios disponibles…</p>`;
+    let occ = {}; try { occ = await ocupadosDe(fecha); } catch (e) { console.warn(e); }
+    if (n !== pedido) return;
+    const cap = Math.max(1, +AJ.capacidad || 1), now = new Date(), hoy = fecha === isoD(now);
+    const libres = horas.filter(h => (occ[h] || 0) < cap && !(hoy && aMin(h) <= now.getHours() * 60 + now.getMinutes() + 30));
+    slotsBox.innerHTML = libres.length ? libres.map(h => `<button type="button" class="slot" data-h="${h}">${h}${cap > 1 ? `<small>${cap - (occ[h] || 0)} libre${cap - (occ[h] || 0) > 1 ? "s" : ""}</small>` : ""}</button>`).join("")
+      : `<p class="slots-msg">No quedan horarios libres este día. Prueba con otra fecha.</p>`;
   }
   slotsBox.addEventListener("click", e => {
-    const b = e.target.closest(".slot"); if (!b || b.disabled) return;
+    const b = e.target.closest(".slot"); if (!b) return;
     $$(".slot", slotsBox).forEach(x => x.classList.remove("on")); b.classList.add("on"); slot = b.dataset.h; updateSum();
   });
   dateIn.addEventListener("change", drawSlots);
@@ -261,14 +371,43 @@ function iniciarCitas(servicios) {
     $("#sPrice").textContent = s ? s.dataset.price : "—";
   }
   book.addEventListener("input", updateSum); book.addEventListener("change", updateSum);
+
+  /* ---- ¿Ya es cliente? busca sus mascotas con el código ---- */
+  const codeIn = $("[name=codigo]", book), msgC = $("#codeMsg"), pick = $("#petPick");
+  const normCode = c => { c = String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); return /^[A-Z]{2}[A-Z0-9]+$/.test(c) ? c.slice(0, 2) + "-" + c.slice(2) : c; };
+  async function verCodigo() {
+    const c = normCode(codeIn.value); cliente = null; pick.innerHTML = ""; $("[name=mascotaId]", book).value = "";
+    if (!c) { msgC.textContent = ""; return; }
+    msgC.className = "code-msg"; msgC.textContent = "Buscando…";
+    try { cliente = await buscarCliente(c); } catch (e) { cliente = null; }
+    if (!cliente) { msgC.className = "code-msg err"; msgC.textContent = "No encontramos ese código. Puedes reservar igual como cliente nuevo."; return; }
+    cliente.code = c; codeIn.value = c;
+    msgC.className = "code-msg ok"; msgC.textContent = `¡Hola, ${cliente.dueno.split(" ")[0]}! Elige a tu mascota:`;
+    const nom = $("[name=nombre]", book); if (!nom.value) nom.value = cliente.dueno;
+    pick.innerHTML = cliente.mascotas.map(m => `<button type="button" class="pp" data-pid="${esc(m.id)}">${m.foto ? `<img src="${esc(foto(m.foto, 120))}" alt="">` : ICO.paw}${esc(m.nombre)}</button>`).join("") + `<button type="button" class="pp" data-pid="">+ Otra mascota</button>`;
+  }
+  $("#codeBtn").addEventListener("click", verCodigo);
+  codeIn.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); verCodigo(); } });
+  codeIn.addEventListener("change", verCodigo);
+  pick.addEventListener("click", e => {
+    const b = e.target.closest(".pp"); if (!b) return;
+    $$(".pp", pick).forEach(x => x.classList.remove("on")); b.classList.add("on");
+    const m = cliente.mascotas.find(x => x.id === b.dataset.pid);
+    $("[name=mascotaId]", book).value = m ? m.id : "";
+    $("[name=mascota]", book).value = m ? m.nombre : "";
+    if (m) { const r = $$("input[name=especie]", book).find(x => x.value === m.especie) || $('input[name=especie][value="Otro"]', book); r.checked = true; $("[name=raza]", book).value = m.raza || ""; }
+    else $("[name=mascota]", book).focus();
+    updateSum();
+  });
+
   const ps = new URLSearchParams(location.search);
   if (ps.get("servicio")) { const r = $$("input[name=servicio]", book).find(x => x.dataset.key === ps.get("servicio")); if (r) r.checked = true; }
-  if (ps.get("codigo")) $("[name=codigo]", book).value = ps.get("codigo").toUpperCase();
+  if (ps.get("codigo")) { codeIn.value = ps.get("codigo"); verCodigo(); }
   drawSlots();
 
-  book.addEventListener("submit", e => {
+  book.addEventListener("submit", async e => {
     e.preventDefault();
-    const msg = $(".f-msg", book);
+    const msg = $(".f-msg", book), btn = $("#bookBtn");
     $$(".error", book).forEach(x => x.classList.remove("error"));
     const bad = $$("[required]", book).filter(x => !x.checkValidity());
     const tel = $("[name=celular]", book); if (tel.value.replace(/\D/g, "").length < 9) bad.push(tel);
@@ -280,28 +419,36 @@ function iniciarCitas(servicios) {
       (bad[0].focus ? bad[0] : slotsBox).focus?.(); return;
     }
     const v = n => ($(`[name="${n}"]`, book)?.value || "").trim();
-    const lines = ["Hola, quiero reservar una cita:", "",
-      "• Servicio: " + $("input[name=servicio]:checked", book).value,
-      "• Fecha: " + nice(dateIn.value), "• Hora: " + slot, "",
-      "• Mascota: " + v("mascota") + " (" + $("input[name=especie]:checked", book).value + ")"];
-    if (v("raza")) lines.push("• Raza / edad: " + v("raza"));
-    lines.push("• Dueño(a): " + v("nombre"), "• Celular: " + v("celular"));
-    if (v("codigo")) lines.push("• Código de cliente: " + v("codigo").toUpperCase());
-    if (v("motivo")) lines.push("• Motivo: " + v("motivo"));
-    wa(lines.join("\n"));
-    msg.className = "f-msg ok";
-    msg.textContent = "¡Listo! Se abrió WhatsApp con tu reserva. Envía el mensaje y te confirmamos en minutos.";
+    const s = $("input[name=servicio]:checked", book);
+    const cita = {
+      fecha: dateIn.value, hora: slot, servicioId: s.dataset.key, servicio: s.value, precio: +s.dataset.p || 0,
+      code: cliente ? cliente.code : "", mascotaId: cliente ? v("mascotaId") : "", mascota: v("mascota"),
+      especie: $("input[name=especie]:checked", book).value, raza: v("raza").slice(0, 80),
+      dueno: v("nombre").slice(0, 80), celular: v("celular").replace(/[^\d+ ]/g, "").slice(0, 15), motivo: v("motivo").slice(0, 300),
+      origen: "web", estado: "confirmada", pagado: 0, estadoPago: "pendiente", creado: new Date().toISOString(),
+    };
+    btn.disabled = true; msg.className = "f-msg"; msg.textContent = "Reservando…";
+    let id = null;
+    try { id = await reservar(cita); } catch (err) { console.error(err); }
+    btn.disabled = false;
+    if (!id) { msg.className = "f-msg err"; msg.textContent = "Ese horario se acaba de llenar o no pudimos conectar. Elige otro horario."; drawSlots(); return; }
+    const txt = ["Hola, acabo de reservar una cita en la web:", "",
+      `• Servicio: ${cita.servicio}${cita.precio ? " (desde " + precio(cita.precio) + ")" : ""}`, `• Fecha: ${nice(cita.fecha)}`, `• Hora: ${cita.hora}`,
+      `• Mascota: ${cita.mascota} (${cita.especie})`, `• Dueño(a): ${cita.dueno}`, `• Celular: ${cita.celular}`];
+    if (cita.code) txt.push(`• Código de cliente: ${cita.code}`);
+    if (cita.motivo) txt.push(`• Motivo: ${cita.motivo}`);
+    book.hidden = true;
+    const ok = $("#bookOk"); ok.hidden = false;
+    ok.innerHTML = `<div class="ok-ic">${ICO.check}</div><h3>¡Cita confirmada!</h3><p>Te esperamos, ${esc(cita.dueno.split(" ")[0])}. Guarda estos datos:</p>
+      <div class="ok-box"><div><span>Servicio</span><b>${esc(cita.servicio)}</b></div><div><span>Fecha</span><b>${esc(nice(cita.fecha))}</b></div>
+      <div><span>Hora</span><b>${esc(cita.hora)} h</b></div><div><span>Mascota</span><b>${esc(cita.mascota)}</b></div>
+      <div><span>Precio</span><b>${cita.precio ? "Desde " + precio(cita.precio) : "A consultar"}</b></div><div><span>Pago</span><b>Pendiente (pagas en la veterinaria)</b></div></div>
+      <p class="sub-ok">Llega 10 minutos antes. ${cita.code ? "También la verás en <b>Mi Mascota</b> con tu código." : "En tu primera visita te daremos tu código para ver el historial de tu mascota."}</p>
+      <div class="hero-actions"><button class="btn btn-pri" id="okWa">${ICO.check} Avisar por WhatsApp</button>${cita.code ? `<a class="btn btn-light" href="mi-mascota?codigo=${esc(cita.code)}">Ver en Mi Mascota</a>` : ""}<a class="btn btn-light" href="citas">Reservar otra</a></div>`;
+    $("#okWa").addEventListener("click", () => wa(txt.join("\n")));
+    ok.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
-
-/* ---------- Arranque ---------- */
-aplicarAjustes(AJ);
-cargarDatos().then(d => {
-  aplicarAjustes(d.ajustes);
-  PRODS = d.productos; drawCart(); pintarTienda();
-  pintarServicios(d.servicios);
-  iniciarCitas(d.servicios);
-});
 
 /* =========================================================
    PORTAL MI MASCOTA
@@ -316,8 +463,8 @@ const CLIENTES = {
       prox: { servicio: "Vacuna Antirrábica anual", fecha: day(2), hora: "10:30", vet: "Dra. Carla Méndez", sede: "Sede Miraflores · Consultorio 2" },
       vacunas: [ { n: "Antirrábica", ult: day(-363), prox: day(2) }, { n: "Séxtuple (DHPPI+L)", ult: day(-200), prox: day(165) }, { n: "Bordetella (tos de las perreras)", ult: day(-340), prox: day(25) } ],
       historial: [
-        { f: day(-18), t: "Baño medicado y corte", d: "Piel en buen estado. Se recomienda shampoo hipoalergénico.", vet: "Grooming · Luis R." },
-        { f: day(-45), t: "Consulta dermatológica", d: "Dermatitis leve por alergia alimentaria. Se cambió a alimento hipoalergénico.", vet: "Dra. Carla Méndez" },
+        { f: day(-18), hora: "11:00", t: "Baño medicado y corte", d: "Piel en buen estado. Se recomienda shampoo hipoalergénico.", vet: "Grooming · Luis R.", monto: 45, pagado: 45, metodo: "Yape" },
+        { f: day(-45), hora: "16:30", t: "Consulta dermatológica", d: "Dermatitis leve por alergia alimentaria. Se cambió a alimento hipoalergénico.", vet: "Dra. Carla Méndez", monto: 80, pagado: 50, metodo: "Efectivo" },
         { f: day(-120), t: "Desparasitación interna", d: "Tableta según peso (31 kg). Próxima en 3 meses.", vet: "Dr. Andrés Salas" },
         { f: day(-200), t: "Vacuna Séxtuple + control anual", d: "Peso 30.8 kg. Corazón y articulaciones sin hallazgos.", vet: "Dra. Carla Méndez" } ],
       rec: [ { i: "pill", t: "Desparasitación", f: day(3) }, { i: "bath", t: "Próximo baño", f: day(12) }, { i: "food", t: "Recompra de alimento", f: day(6) } ] },
@@ -348,47 +495,55 @@ if (portal) {
     steth: '<path d="M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3"/><circle cx="20" cy="12" r="2"/>',
     alert: '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/>',
   };
-  const ic = k => `<svg class="ico" viewBox="0 0 24 24">${R_ICO[k]}</svg>`;
+  const ic = k => `<svg class="ico" viewBox="0 0 24 24">${R_ICO[k] || R_ICO.pill}</svg>`;
   const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
   const DIA = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   const fmt = d => `${d.getDate()} ${MES[d.getMonth()]} ${d.getFullYear()}`;
   const diff = d => Math.round((d - day(0)) / 864e5);
-  const edad = d => { const m = Math.floor((Date.now() - d) / (30.44 * 864e5)); return m >= 12 ? `${Math.floor(m / 12)} año${m >= 24 ? "s" : ""}${m % 12 ? " y " + (m % 12) + " m" : ""}` : `${m} meses`; };
+  const edad = d => { const m = Math.floor((Date.now() - d) / (30.44 * 864e5)); return m >= 12 ? `${Math.floor(m / 12)} año${m >= 24 ? "s" : ""}${m % 12 ? " y " + (m % 12) + " m" : ""}` : `${Math.max(m, 0)} meses`; };
   const enDias = n => n === 0 ? "Hoy" : n === 1 ? "Mañana" : n < 0 ? `Hace ${-n} días` : `En ${n} días`;
+  const toD = s => { if (!s) return null; if (s instanceof Date) return s; const [y, mo, d] = String(s).slice(0, 10).split("-").map(Number); return new Date(y, mo - 1, d); };
+  const fotoSrc = f => !f ? "" : foto(f, 700);
+  const pagoTxt = (total, pagado) => {
+    total = +total || 0; pagado = +pagado || 0;
+    if (total && pagado >= total) return `<span class="st ok">Pagado ${soles(pagado)}</span>`;
+    if (pagado > 0) return `<span class="st warn">Adelanto ${soles(pagado)} · Saldo ${soles(Math.max(total - pagado, 0))}</span>`;
+    return `<span class="st bad">Pago pendiente${total ? " · " + soles(total) : ""}</span>`;
+  };
   let cli = null, code = "", idx = 0, timer = null;
 
-  const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const fotoSrc = f => !f ? "" : f.startsWith("data:") ? f : foto(f, 700);
-
-  /* ---- Lee los datos: Firebase (si está configurado) → panel en modo demo → ejemplos ---- */
-  const CFG = window.FIREBASE_CONFIG || {};
-  const LIVE = CFG.apiKey && !CFG.apiKey.startsWith("PEGA");
-  const toD = s => { if (!s) return null; if (s instanceof Date) return s; const [y, mo, d] = String(s).slice(0, 10).split("-").map(Number); return new Date(y, mo - 1, d); };
-  function normal(c, mascotas) {   // convierte el formato del panel al de esta página
-    return { dueño: c.dueno || c.dueño || "", mascotas: mascotas.map(m => ({ ...m,
-      nac: toD(m.nac),
-      prox: m.prox && m.prox.fecha ? { ...m.prox, servicio: m.prox.detalle ? `${m.prox.servicio} · ${m.prox.detalle}` : m.prox.servicio, fecha: toD(m.prox.fecha) } : null,
-      vacunas: (m.vacunas || []).map(v => ({ ...v, ult: toD(v.ult), prox: toD(v.prox) })),
-      historial: (m.historial || []).map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f),
-      rec: (m.rec || []).map(r => ({ ...r, f: toD(r.f) })).filter(r => diff(r.f) >= -7).sort((a, b) => a.f - b.f) })) };
+  function normal(c, mascotas, agenda) {   // convierte el formato del panel al de esta página
+    const hoy = day(0);
+    return { dueño: c.dueno || c.dueño || "", mascotas: mascotas.map(m => {
+      const citas = (agenda || []).filter(a => a.mascotaId === m.id && (a.estado || "confirmada") === "confirmada")
+        .map(a => ({ ...a, fecha: toD(a.fecha) })).filter(a => a.fecha >= hoy).sort((a, b) => (a.fecha - b.fecha) || String(a.hora).localeCompare(b.hora));
+      if (!citas.length && m.prox && m.prox.fecha && toD(m.prox.fecha) >= hoy) citas.push({ ...m.prox, servicio: m.prox.detalle ? `${m.prox.servicio} · ${m.prox.detalle}` : m.prox.servicio, fecha: toD(m.prox.fecha) });
+      return { ...m, nac: toD(m.nac), citas,
+        vacunas: (m.vacunas || []).map(v => ({ ...v, ult: toD(v.ult), prox: toD(v.prox) })),
+        historial: (m.historial || []).map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f || String(b.hora || "").localeCompare(a.hora || "")),
+        rec: (m.rec || []).map(r => ({ ...r, f: toD(r.f) })).filter(r => diff(r.f) >= -7).sort((a, b) => a.f - b.f) };
+    }) };
   }
   async function buscar(c) {
-    if (LIVE) {
-      const base = "https://www.gstatic.com/firebasejs/10.12.2/";
-      const [app, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-firestore.js")]);
-      const db = fs.getFirestore(app.getApps().length ? app.getApp() : app.initializeApp(CFG));
+    if (EN_VIVO) {
+      const { fs, db } = await fb();
       const s = await fs.getDoc(fs.doc(db, "clientes", c)); if (!s.exists()) return null;
-      const ms = await fs.getDocs(fs.collection(db, "clientes", c, "mascotas"));
-      return normal(s.data(), ms.docs.map(d => ({ id: d.id, ...d.data() })));
+      const [ms, ag] = await Promise.all([fs.getDocs(fs.collection(db, "clientes", c, "mascotas")), fs.getDocs(fs.collection(db, "clientes", c, "agenda"))]);
+      return normal(s.data(), ms.docs.map(d => ({ id: d.id, ...d.data() })), ag.docs.map(d => ({ id: d.id, ...d.data() })));
     }
-    let local = null; try { local = JSON.parse(localStorage.getItem("hv_db")); } catch (e) {}
-    if (local && local.clientes && local.clientes[c]) { const x = local.clientes[c]; return normal(x, Object.entries(x.mascotas || {}).map(([id, m]) => ({ id, ...m }))); }
-    return CLIENTES[c] || null;
+    const local = localDB();
+    if (local && local.clientes && local.clientes[c]) {
+      const x = local.clientes[c];
+      const ag = Object.entries(local.citas || {}).filter(([, a]) => a.code === c).map(([id, a]) => ({ id, ...a, total: a.total ?? a.precio, pagado: a.pagado || 0 }));
+      return normal(x, Object.entries(x.mascotas || {}).map(([id, m]) => ({ id, ...m })), ag);
+    }
+    const demo = CLIENTES[c]; if (!demo) return null;
+    return { ...demo, mascotas: demo.mascotas.map(m => ({ ...m, citas: m.prox ? [m.prox] : [] })) };
   }
 
   async function login(c) {
     c = c.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (/^HV[A-Z0-9]+$/.test(c)) c = "HV-" + c.slice(2);
+    if (/^[A-Z]{2}[A-Z0-9]+$/.test(c)) c = c.slice(0, 2) + "-" + c.slice(2);
     const err = $("#loginErr"), btn = $("#codeForm button");
     err.textContent = ""; btn.disabled = true;
     let r = null;
@@ -409,31 +564,32 @@ if (portal) {
     const m = cli.mascotas[idx];
     $("#dHello").textContent = `Hola, ${(cli.dueño || "").split(" ")[0]}`;
     $("#dCode").textContent = code;
-    $("#petTabs").innerHTML = cli.mascotas.length > 1 ? cli.mascotas.map((p, i) => `<button class="pet-tab ${i === idx ? "on" : ""}" data-i="${i}"><span class="av">${p.foto ? `<img src="${E(fotoSrc(p.foto))}" alt="" onerror="this.remove()">` : ""}</span>${E(p.nombre)}</button>`).join("") : "";
+    $("#petTabs").innerHTML = cli.mascotas.length > 1 ? cli.mascotas.map((p, i) => `<button class="pet-tab ${i === idx ? "on" : ""}" data-i="${i}"><span class="av">${p.foto ? `<img src="${esc(fotoSrc(p.foto))}" alt="" onerror="this.remove()">` : ""}</span>${esc(p.nombre)}</button>`).join("") : "";
     const vencidas = m.vacunas.filter(v => diff(v.prox) < 0);
     $("#petCard").innerHTML = `
-      <div class="pet-photo">${m.foto ? `<img src="${E(fotoSrc(m.foto))}" alt="Foto de ${E(m.nombre)}" onerror="this.remove()">` : ""}<span class="badge">${E(m.especie)}</span></div>
-      <div class="pet-info"><h2>${E(m.nombre)}</h2><span>${E([m.raza, m.sexo].filter(Boolean).join(" · "))}</span>
+      <div class="pet-photo">${m.foto ? `<img src="${esc(fotoSrc(m.foto))}" alt="Foto de ${esc(m.nombre)}" onerror="this.remove()">` : ""}<span class="badge">${esc(m.especie)}</span></div>
+      <div class="pet-info"><h2>${esc(m.nombre)}</h2><span>${esc([m.raza, m.sexo].filter(Boolean).join(" · "))}</span>
         <div class="facts">
-          <div><small>Edad</small><b>${m.nac ? edad(m.nac) : "—"}</b></div><div><small>Peso</small><b>${E(m.peso || "—")}</b></div>
-          <div><small>Microchip</small><b>${E(m.chip || "—")}</b></div><div><small>Alergias</small><b>${E(m.alergias || "—")}</b></div>
+          <div><small>Edad</small><b>${m.nac ? edad(m.nac) : "—"}</b></div><div><small>Peso</small><b>${esc(m.peso || "—")}</b></div>
+          <div><small>Microchip</small><b>${esc(m.chip || "—")}</b></div><div><small>Alergias</small><b>${esc(m.alergias || "—")}</b></div>
         </div>
-        ${vencidas.length ? `<div class="alert-box">${ic("alert")}<span><b>Vacuna vencida:</b> ${E(vencidas.map(v => v.n).join(", "))}. Agenda su refuerzo.</span></div>` : ""}
+        ${vencidas.length ? `<div class="alert-box">${ic("alert")}<span><b>Vacuna vencida:</b> ${esc(vencidas.map(v => v.n).join(", "))}. Agenda su refuerzo.</span></div>` : ""}
       </div>`;
     clearInterval(timer);
-    const pr = m.prox && diff(m.prox.fecha) >= 0 ? m.prox : null;
+    const pr = m.citas[0];
     if (pr) {
       const d = pr.fecha;
       $("#nextBox").innerHTML = `
-        <div><small>PRÓXIMA CITA · ${enDias(diff(d)).toUpperCase()}</small><h3>${E(pr.servicio)}</h3>
-          <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${E(pr.hora)} h</b><br>${E([pr.vet, pr.sede].filter(Boolean).join(" · "))}</p></div>
+        <div><small>PRÓXIMA CITA · ${enDias(diff(d)).toUpperCase()}</small><h3>${esc(pr.servicio)}</h3>
+          <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${esc(pr.hora)} h</b>${pr.vet || pr.sede ? "<br>" + esc([pr.vet, pr.sede].filter(Boolean).join(" · ")) : ""}</p>
+          ${pr.total != null || pr.pagado ? `<div class="pay-line">${pagoTxt(pr.total, pr.pagado)}</div>` : ""}</div>
         <div class="countdown" id="cd"></div>
         <div class="next-actions">
           <button class="btn btn-white" data-act="confirmar">Confirmar asistencia</button>
           <button class="btn btn-glass" data-act="reprogramar">Reprogramar</button>
-          <a class="btn btn-glass" href="citas?codigo=${code}">Agendar otra cita</a>
+          <a class="btn btn-glass" href="citas?codigo=${encodeURIComponent(code)}">Agendar otra cita</a>
         </div>`;
-      const [hh, mm] = (pr.hora || "00:00").split(":"); const target = new Date(d); target.setHours(+hh, +mm);
+      const [hh, mm] = String(pr.hora || "00:00").split(":"); const target = new Date(d); target.setHours(+hh, +mm);
       const tick = () => {
         let s = Math.max(0, Math.floor((target - Date.now()) / 1000));
         const D = Math.floor(s / 86400); s %= 86400; const H = Math.floor(s / 3600); s %= 3600; const M = Math.floor(s / 60);
@@ -441,26 +597,38 @@ if (portal) {
       };
       tick(); timer = setInterval(tick, 30000);
     } else {
-      $("#nextBox").innerHTML = `<div><small>PRÓXIMA CITA</small><h3>${E(m.nombre)} no tiene citas programadas</h3><p>Reserva su próximo control, baño o vacuna en menos de un minuto.</p></div>
-        <div class="next-actions"><a class="btn btn-white" href="citas?codigo=${code}">Reservar cita</a></div>`;
+      $("#nextBox").innerHTML = `<div><small>PRÓXIMA CITA</small><h3>${esc(m.nombre)} no tiene citas programadas</h3><p>Reserva su próximo control, baño o vacuna en menos de un minuto.</p></div>
+        <div class="next-actions"><a class="btn btn-white" href="citas?codigo=${encodeURIComponent(code)}">Reservar cita</a></div>`;
     }
+    // Todas las próximas citas con su estado de pago
+    $("#citasCard").style.display = m.citas.length > 1 ? "" : "none";
+    $("#citasList").innerHTML = m.citas.map(c => `<div class="vac"><div><b>${esc(c.servicio)}</b><small>${DIA[c.fecha.getDay()]} ${fmt(c.fecha)} · ${esc(c.hora)} h</small></div>${pagoTxt(c.total, c.pagado)}</div>`).join("");
+    // Servicios y pagos (atenciones cobradas)
+    const pag = m.historial.filter(h => +h.monto > 0 || +h.pagado > 0);
+    const totalPag = pag.reduce((a, h) => a + (+h.pagado || 0), 0) + m.citas.reduce((a, c) => a + (+c.pagado || 0), 0);
+    const saldo = pag.reduce((a, h) => a + Math.max((+h.monto || 0) - (+h.pagado || 0), 0), 0);
+    $("#pagos").innerHTML = pag.length ? `
+      <div class="pay-sum"><div><small>Total pagado</small><b>${soles(totalPag)}</b></div>${saldo ? `<div class="due"><small>Saldo por pagar</small><b>${soles(saldo)}</b></div>` : `<div><small>Saldo de atenciones</small><b>S/ 0.00</b></div>`}</div>
+      <div class="pay-list">${pag.map(h => `<div class="pay-row"><div><b>${esc(h.t)}</b><small>${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}${h.metodo ? " · " + esc(h.metodo) : ""}${h.vet ? " · " + esc(h.vet) : ""}</small></div>
+        <div class="amt"><b>${soles(+h.monto || +h.pagado)}</b>${pagoTxt(h.monto || h.pagado, h.pagado)}</div></div>`).join("")}</div>`
+      : `<p style="color:var(--muted)">Aún no hay pagos registrados.</p>`;
     $("#vacs").innerHTML = m.vacunas.length ? m.vacunas.slice().sort((a, b) => a.prox - b.prox).map(v => { const n = diff(v.prox);
       const st = n < 0 ? `<span class="st bad">Vencida</span>` : n <= 30 ? `<span class="st warn">Vence ${enDias(n).toLowerCase()}</span>` : `<span class="st ok">Al día</span>`;
-      return `<div class="vac"><div><b>${E(v.n)}</b><small>Aplicada: ${fmt(v.ult)} · Próxima: ${fmt(v.prox)}</small></div>${st}</div>`; }).join("")
+      return `<div class="vac"><div><b>${esc(v.n)}</b><small>Aplicada: ${fmt(v.ult)} · Próxima: ${fmt(v.prox)}</small></div>${st}</div>`; }).join("")
       : `<p style="color:var(--muted)">Aún no hay vacunas registradas.</p>`;
-    $("#timeline").innerHTML = (pr ? `<li class="upcoming"><span class="t-date">${fmt(pr.fecha)} · ${E(pr.hora)} h · Programada</span><b>${E(pr.servicio)}</b><span class="vet">${E(pr.vet || "")}</span></li>` : "") +
-      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}</span><b>${E(h.t)}</b>${h.d ? `<p>${E(h.d)}</p>` : ""}<span class="vet">${E(h.vet || "")}</span></li>`).join("")
+    $("#timeline").innerHTML = m.citas.map(c => `<li class="upcoming"><span class="t-date">${fmt(c.fecha)} · ${esc(c.hora)} h · Programada</span><b>${esc(c.servicio)}</b><span class="vet">${esc(c.vet || "")}</span></li>`).join("") +
+      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}</span><b>${esc(h.t)}</b>${h.d ? `<p>${esc(h.d)}</p>` : ""}<span class="vet">${esc(h.vet || "")}</span></li>`).join("")
       || `<p style="color:var(--muted)">Aún no hay atenciones registradas.</p>`;
-    $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(R_ICO[r.i] ? r.i : "pill")}</i><b>${E(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
+    $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(r.i)}</i><b>${esc(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
       : `<p style="color:var(--muted)">Sin recordatorios por ahora.</p>`;
   }
   portal.addEventListener("click", e => {
     const t = e.target.closest("[data-i]"); if (t) { idx = +t.dataset.i; render(); }
     const a = e.target.closest("[data-act]"); if (!a) return;
-    const m = cli.mascotas[idx], pr = m.prox; if (!pr) return;
+    const m = cli.mascotas[idx], pr = m.citas[0]; if (!pr) return;
     const base = `${pr.servicio} de ${m.nombre} el ${fmt(pr.fecha)} a las ${pr.hora} h (código ${code})`;
-    if (a.dataset.act === "confirmar") wa(`Hola Huellitas, confirmo la cita: ${base}. ¡Gracias!`);
-    if (a.dataset.act === "reprogramar") wa(`Hola Huellitas, necesito reprogramar la cita: ${base}. ¿Qué otros horarios tienen?`);
+    if (a.dataset.act === "confirmar") wa(`Hola ${NOMBRE}, confirmo la cita: ${base}. ¡Gracias!`);
+    if (a.dataset.act === "reprogramar") wa(`Hola ${NOMBRE}, necesito reprogramar la cita: ${base}. ¿Qué otros horarios tienen?`);
   });
   $("#codeForm").addEventListener("submit", e => { e.preventDefault(); $("#codeIn").classList.remove("error"); login($("#codeIn").value); });
   $$("[data-code]").forEach(b => b.addEventListener("click", () => { $("#codeIn").value = b.dataset.code; login(b.dataset.code); }));
@@ -468,7 +636,7 @@ if (portal) {
   $("#printBtn").addEventListener("click", () => window.print());
   const pc = new URLSearchParams(location.search).get("codigo");
   let saved = null; try { saved = sessionStorage.getItem("hv_code"); } catch (e) {}
-  if (pc || saved) login(pc || saved);
+  if (pc || saved) cargarDatos().then(() => login(pc || saved));
 }
 
 /* =========================================================
@@ -483,6 +651,17 @@ if (cf) cf.addEventListener("submit", e => {
   const tel = $("[name=celular]", cf); if (tel.value.replace(/\D/g, "").length < 9) bad.push(tel);
   if (bad.length) { bad.forEach(x => x.classList.add("error")); msg.className = "f-msg err"; msg.textContent = "Completa los campos obligatorios (*)."; bad[0].focus(); return; }
   const v = n => $(`[name="${n}"]`, cf).value.trim();
-  wa(["Hola Huellitas:", "", "• Nombre: " + v("nombre"), "• Celular: " + v("celular"), "• Asunto: " + v("asunto"), "• Mensaje: " + v("mensaje")].join("\n"));
+  wa([`Hola ${NOMBRE}:`, "", "• Nombre: " + v("nombre"), "• Celular: " + v("celular"), "• Asunto: " + v("asunto"), "• Mensaje: " + v("mensaje")].join("\n"));
   msg.className = "f-msg ok"; msg.textContent = "¡Listo! Se abrió WhatsApp con tu mensaje.";
+});
+
+/* ---------- Arranque ---------- */
+aplicarAjustes(AJ);
+if (D0.web) aplicarWeb(D0.web);
+cargarDatos().then(d => {
+  aplicarAjustes(d.ajustes);
+  aplicarWeb(d.web);
+  PRODS = d.productos; drawCart(); pintarTienda();
+  pintarServicios(d.servicios);
+  iniciarCitas(d.servicios);
 });
