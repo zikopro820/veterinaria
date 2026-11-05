@@ -15,7 +15,7 @@ window.DATOS = {
   "domingoCierra": "13:00",
   "delivery": 10,
   "deliveryGratis": 150,
-  "capacidad": 1,
+  "capacidad": 3,
   "turno": 30
  },
  "servicios": [
@@ -793,6 +793,65 @@ window.DATOS = {
    }
   ]
  },
+ "doctores": [
+  {
+   "id": "carla",
+   "n": "Dra. Carla Méndez",
+   "esp": "Medicina general y dermatología",
+   "color": "#5b3df5",
+   "dias": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    0
+   ],
+   "desde": "9:00",
+   "hasta": "19:00",
+   "foto": "",
+   "activo": true,
+   "ausencias": []
+  },
+  {
+   "id": "andres",
+   "n": "Dr. Andrés Salas",
+   "esp": "Cirugía y odontología",
+   "color": "#ff6b4a",
+   "dias": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "desde": "9:00",
+   "hasta": "19:00",
+   "foto": "",
+   "activo": true,
+   "ausencias": []
+  },
+  {
+   "id": "paola",
+   "n": "Dra. Paola Gutiérrez",
+   "esp": "Felinos y exóticos",
+   "color": "#19b37d",
+   "dias": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "desde": "9:00",
+   "hasta": "17:00",
+   "foto": "",
+   "activo": true,
+   "ausencias": []
+  }
+ ],
  "iconos": {
   "steth": "<path d=\"M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3\"/><circle cx=\"20\" cy=\"12\" r=\"2\"/>",
   "syringe": "<path d=\"M18 2l4 4M17 7l3-3M19 9L8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6\"/>",

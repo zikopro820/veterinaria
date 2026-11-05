@@ -651,3 +651,10 @@ a.prod-img { display: grid; }
   .bloque { padding: 20px; }
   .prod-img .view { display: none; }
 }
+
+/* ---------- Receta en Mi Mascota ---------- */
+.timeline .rx { background: #f4f1ff; border-radius: 12px; padding: 10px 12px; margin: 8px 0; display: grid; gap: 4px; font-size: .86rem; }
+.timeline .rx b { color: var(--pri); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+.timeline .rx span::before { content: "• "; color: var(--pri); font-weight: 800; }
+.timeline p b { color: var(--ink); }
+.timeline .vit { font-size: .82rem; }

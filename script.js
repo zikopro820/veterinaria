@@ -66,19 +66,19 @@ const mezclar = (a, b) => { const o = { ...a }; for (const k in (b || {})) o[k] 
 let DATA = null;
 async function cargarDatos() {
   if (DATA) return DATA;
-  let prod = null, serv = null, aj = null, web = null, cats = null, pags = null;
+  let prod = null, serv = null, aj = null, web = null, cats = null, pags = null, docs = null;
   try {
     if (EN_VIVO) {
       let cache = null; try { cache = JSON.parse(sessionStorage.getItem("hv_cache")); } catch (e) {}
-      if (cache && cache.v === 3 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web, cats, pags } = cache);
+      if (cache && cache.v === 4 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web, cats, pags, docs } = cache);
       else {
         const { fs, db } = await fb();
-        const [p, s, a, w, c, g] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
-          fs.getDoc(fs.doc(db, "ajustes", "general")), fs.getDoc(fs.doc(db, "ajustes", "web")), fs.getDoc(fs.doc(db, "ajustes", "categorias")), fs.getDoc(fs.doc(db, "ajustes", "paginas"))]);
-        cats = c.exists() ? c.data() : null; pags = g.exists() ? g.data() : null;
+        const [p, s, a, w, c, g, dr] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
+          fs.getDoc(fs.doc(db, "ajustes", "general")), fs.getDoc(fs.doc(db, "ajustes", "web")), fs.getDoc(fs.doc(db, "ajustes", "categorias")), fs.getDoc(fs.doc(db, "ajustes", "paginas")), fs.getDoc(fs.doc(db, "ajustes", "doctores"))]);
+        cats = c.exists() ? c.data() : null; pags = g.exists() ? g.data() : null; docs = dr.exists() ? dr.data().lista : null;
         prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id }));
         aj = a.exists() ? a.data() : null; web = w.exists() ? w.data() : null;
-        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 3, t: Date.now(), prod, serv, aj, web, cats, pags })); } catch (e) {}
+        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 4, t: Date.now(), prod, serv, aj, web, cats, pags, docs })); } catch (e) {}
       }
     } else {
       const local = localDB();
@@ -86,7 +86,7 @@ async function cargarDatos() {
         if (local.productos) prod = Object.entries(local.productos).map(([id, x]) => ({ ...x, id }));
         if (local.servicios) serv = Object.entries(local.servicios).map(([id, x]) => ({ ...x, id }));
         aj = local.ajustes || null; web = local.web || null;
-        cats = (local.conf || {}).categorias || null; pags = (local.conf || {}).paginas || null;
+        cats = (local.conf || {}).categorias || null; pags = (local.conf || {}).paginas || null; docs = ((local.conf || {}).doctores || {}).lista || null;
       }
     }
   } catch (e) { console.warn("No se pudieron leer los datos; se usan los de ejemplo.", e); }
@@ -97,6 +97,7 @@ async function cargarDatos() {
     web: mezclar(D0.web || {}, web),
     categorias: { productos: ordenar((cats && cats.productos) || D0.categorias.productos), servicios: ordenar((cats && cats.servicios) || D0.categorias.servicios) },
     paginas: mezclar(D0.paginas || {}, pags),
+    doctores: docs || D0.doctores || [],
   };
   return DATA;
 }
@@ -312,6 +313,14 @@ function horasDelDia(fecha) {
   for (let t = aMin(AJ.abre); t + paso <= aMin(fin); t += paso) out.push(aHora(t));
   return out;
 }
+let DOCTORES_W = [];
+function capHora(fecha, h) {   // cuántas citas caben: doctores que trabajan a esa hora (y vinieron)
+  const act = DOCTORES_W.filter(d => d.activo !== false);
+  if (!act.length) return Math.max(1, +AJ.capacidad || 1);
+  const dia = new Date(fecha + "T12:00").getDay(), paso = +AJ.turno || 30;
+  return act.filter(d => (d.dias || []).includes(dia) && !(d.ausencias || []).some(a => a.desde <= fecha && fecha <= (a.hasta || a.desde))
+    && aMin(h) >= aMin(d.desde) && aMin(h) + paso <= aMin(d.hasta)).length;
+}
 async function ocupadosDe(fecha) {   // { "10:30": 2, ... }
   const cnt = {};
   if (EN_VIVO) {
@@ -334,7 +343,7 @@ async function buscarCliente(code) {   // → { dueno, mascotas:[{id,nombre,espe
   return { dueno: c.dueno, mascotas: Object.entries(c.mascotas || {}).map(([id, m]) => ({ id, ...m })) };
 }
 async function reservar(base) {   // intenta ocupar un lugar libre del horario; devuelve el id de la cita
-  const cap = Math.max(1, +AJ.capacidad || 1), pub = base.code && base.mascotaId;
+  const cap = Math.max(1, capHora(base.fecha, base.hora)), pub = base.code && base.mascotaId;
   const agenda = { fecha: base.fecha, hora: base.hora, servicio: base.servicio, precio: base.precio, mascota: base.mascota, mascotaId: base.mascotaId, total: base.precio, pagado: 0, estadoPago: "pendiente", estado: "confirmada", creado: base.creado };
   for (let k = 1; k <= cap; k++) {
     const id = `${base.fecha}_${base.hora}_${k}`;
@@ -384,9 +393,9 @@ function iniciarCitas(servicios) {
     slotsBox.innerHTML = `<p class="slots-msg">Buscando horarios disponibles…</p>`;
     let occ = {}; try { occ = await ocupadosDe(fecha); } catch (e) { console.warn(e); }
     if (n !== pedido) return;
-    const cap = Math.max(1, +AJ.capacidad || 1), now = new Date(), hoy = fecha === isoD(now);
-    const libres = horas.filter(h => (occ[h] || 0) < cap && !(hoy && aMin(h) <= now.getHours() * 60 + now.getMinutes() + 30));
-    slotsBox.innerHTML = libres.length ? libres.map(h => `<button type="button" class="slot" data-h="${h}">${h}${cap > 1 ? `<small>${cap - (occ[h] || 0)} libre${cap - (occ[h] || 0) > 1 ? "s" : ""}</small>` : ""}</button>`).join("")
+    const cap = h => capHora(fecha, h), now = new Date(), hoy = fecha === isoD(now);
+    const libres = horas.filter(h => (occ[h] || 0) < cap(h) && !(hoy && aMin(h) <= now.getHours() * 60 + now.getMinutes() + 30));
+    slotsBox.innerHTML = libres.length ? libres.map(h => { const n = cap(h) - (occ[h] || 0); return `<button type="button" class="slot" data-h="${h}">${h}${n > 1 ? `<small>${n} libres</small>` : ""}</button>`; }).join("")
       : `<p class="slots-msg">No quedan horarios libres este día. Prueba con otra fecha.</p>`;
   }
   slotsBox.addEventListener("click", e => {
@@ -563,9 +572,13 @@ if (portal) {
       const citas = (agenda || []).filter(a => a.mascotaId === m.id && (a.estado || "confirmada") === "confirmada")
         .map(a => ({ ...a, fecha: toD(a.fecha) })).filter(a => a.fecha >= hoy).sort((a, b) => (a.fecha - b.fecha) || String(a.hora).localeCompare(b.hora));
       if (!citas.length && m.prox && m.prox.fecha && toD(m.prox.fecha) >= hoy) citas.push({ ...m.prox, servicio: m.prox.detalle ? `${m.prox.servicio} · ${m.prox.detalle}` : m.prox.servicio, fecha: toD(m.prox.fecha) });
+      // citas atendidas que aún no están en el historial (por ejemplo, solo se registró el pago)
+      const hist = (m.historial || []).slice();
+      (agenda || []).filter(a => a.mascotaId === m.id && a.estado === "atendida" && !hist.some(h => h.citaId === a.id))
+        .forEach(a => hist.push({ f: a.fecha, hora: a.hora, t: a.servicio, d: "", vet: a.vet || "", monto: +a.total || 0, pagado: +a.pagado || 0, metodo: "", citaId: a.id }));
       return { ...m, nac: toD(m.nac), citas,
         vacunas: (m.vacunas || []).map(v => ({ ...v, ult: toD(v.ult), prox: toD(v.prox) })),
-        historial: (m.historial || []).map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f || String(b.hora || "").localeCompare(a.hora || "")),
+        historial: hist.map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f || String(b.hora || "").localeCompare(a.hora || "")),
         rec: (m.rec || []).map(r => ({ ...r, f: toD(r.f) })).filter(r => diff(r.f) >= -7).sort((a, b) => a.f - b.f) };
     }) };
   }
@@ -626,7 +639,7 @@ if (portal) {
       const d = pr.fecha;
       $("#nextBox").innerHTML = `
         <div><small>PRÓXIMA CITA · ${enDias(diff(d)).toUpperCase()}</small><h3>${esc(pr.servicio)}</h3>
-          <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${esc(pr.hora)} h</b>${pr.vet || pr.sede ? "<br>" + esc([pr.vet, pr.sede].filter(Boolean).join(" · ")) : ""}</p>
+          <p>${DIA[d.getDay()]} ${fmt(d)} · <b>${esc(pr.hora)} h</b><br>${pr.vet ? "Te atiende: <b>" + esc(pr.vet) + "</b>" : "Doctor por asignar"}${pr.sede ? " · " + esc(pr.sede) : ""}</p>
           ${pr.total != null || pr.pagado ? `<div class="pay-line">${pagoTxt(pr.total, pr.pagado)}</div>` : ""}</div>
         <div class="countdown" id="cd"></div>
         <div class="next-actions">
@@ -647,7 +660,7 @@ if (portal) {
     }
     // Todas las próximas citas con su estado de pago
     $("#citasCard").style.display = m.citas.length > 1 ? "" : "none";
-    $("#citasList").innerHTML = m.citas.map(c => `<div class="vac"><div><b>${esc(c.servicio)}</b><small>${DIA[c.fecha.getDay()]} ${fmt(c.fecha)} · ${esc(c.hora)} h</small></div>${pagoTxt(c.total, c.pagado)}</div>`).join("");
+    $("#citasList").innerHTML = m.citas.map(c => `<div class="vac"><div><b>${esc(c.servicio)}</b><small>${DIA[c.fecha.getDay()]} ${fmt(c.fecha)} · ${esc(c.hora)} h · ${c.vet ? "Te atiende: " + esc(c.vet) : "Doctor por asignar"}</small></div>${pagoTxt(c.total, c.pagado)}</div>`).join("");
     // Servicios y pagos (atenciones cobradas)
     const pag = m.historial.filter(h => +h.monto > 0 || +h.pagado > 0);
     const totalPag = pag.reduce((a, h) => a + (+h.pagado || 0), 0) + m.citas.reduce((a, c) => a + (+c.pagado || 0), 0);
@@ -662,7 +675,10 @@ if (portal) {
       return `<div class="vac"><div><b>${esc(v.n)}</b><small>Aplicada: ${fmt(v.ult)} · Próxima: ${fmt(v.prox)}</small></div>${st}</div>`; }).join("")
       : `<p style="color:var(--muted)">Aún no hay vacunas registradas.</p>`;
     $("#timeline").innerHTML = m.citas.map(c => `<li class="upcoming"><span class="t-date">${fmt(c.fecha)} · ${esc(c.hora)} h · Programada</span><b>${esc(c.servicio)}</b><span class="vet">${esc(c.vet || "")}</span></li>`).join("") +
-      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}</span><b>${esc(h.t)}</b>${h.d ? `<p>${esc(h.d)}</p>` : ""}<span class="vet">${esc(h.vet || "")}</span></li>`).join("")
+      m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}</span><b>${esc(h.t)}</b>${h.d ? `<p><b>Diagnóstico:</b> ${esc(h.d)}</p>` : ""}
+        ${(h.meds || []).length ? `<div class="rx"><b>Receta</b>${h.meds.map(x => `<span>${esc(x.n)}${x.dosis ? " – " + esc(x.dosis) : ""}${x.cada ? ", cada " + esc(x.cada) : ""}${x.dias ? ", por " + esc(x.dias) + " días" : ""}</span>`).join("")}</div>` : ""}
+        ${h.ind ? `<p><b>Indicaciones:</b> ${esc(h.ind)}</p>` : ""}${h.peso || h.temp ? `<p class="vit">${h.peso ? "Peso: " + esc(h.peso) : ""}${h.peso && h.temp ? " · " : ""}${h.temp ? "Temperatura: " + esc(h.temp) : ""}</p>` : ""}
+        ${h.vet ? `<span class="vet">Atendió: ${esc(h.vet)}</span>` : ""}</li>`).join("")
       || `<p style="color:var(--muted)">Aún no hay atenciones registradas.</p>`;
     $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(r.i)}</i><b>${esc(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
       : `<p style="color:var(--muted)">Sin recordatorios por ahora.</p>`;
@@ -832,7 +848,7 @@ function paginaLibre(pg) {
 aplicarAjustes(AJ);
 if (D0.web) aplicarWeb(D0.web);
 cargarDatos().then(d => {
-  CATS = d.categorias;
+  CATS = d.categorias; DOCTORES_W = d.doctores || [];
   aplicarAjustes(d.ajustes);
   aplicarWeb(d.web);
   aplicarPaginas(d.paginas);
