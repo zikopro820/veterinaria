@@ -594,7 +594,7 @@ if (portal) {
       // citas atendidas que aún no están en el historial (por ejemplo, solo se registró el pago)
       const hist = (m.historial || []).slice();
       (agenda || []).filter(a => a.mascotaId === m.id && a.estado === "atendida" && !hist.some(h => h.citaId === a.id))
-        .forEach(a => hist.push({ f: a.fecha, hora: a.hora, t: a.servicio, d: "", vet: a.vet || "", monto: +a.total || 0, pagado: +a.pagado || 0, metodo: "", citaId: a.id }));
+        .forEach(a => hist.push({ f: a.fecha, hora: a.hora, t: a.servicio, d: "", vet: a.vet || "", monto: +a.total || 0, pagado: +a.pagado || 0, metodo: "", citaId: a.id, cargos: a.cargos || [], base: a.precioBase, pagos: a.pagos || [] }));
       return { ...m, nac: toD(m.nac), citas,
         vacunas: (m.vacunas || []).map(v => ({ ...v, ult: toD(v.ult), prox: toD(v.prox) })),
         historial: hist.map(h => ({ ...h, f: toD(h.f) })).sort((a, b) => b.f - a.f || String(b.hora || "").localeCompare(a.hora || "")),
@@ -686,7 +686,9 @@ if (portal) {
     const saldo = pag.reduce((a, h) => a + Math.max((+h.monto || 0) - (+h.pagado || 0), 0), 0);
     $("#pagos").innerHTML = pag.length ? `
       <div class="pay-sum"><div><small>Total pagado</small><b>${soles(totalPag)}</b></div>${saldo ? `<div class="due"><small>Saldo por pagar</small><b>${soles(saldo)}</b></div>` : `<div><small>Saldo de atenciones</small><b>S/ 0.00</b></div>`}</div>
-      <div class="pay-list">${pag.map(h => `<div class="pay-row"><div><b>${esc(h.t)}</b><small>${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}${h.metodo ? " · " + esc(h.metodo) : ""}${h.vet ? " · " + esc(h.vet) : ""}</small></div>
+      <div class="pay-list">${pag.map(h => `<div class="pay-row"><div><b>${esc(h.t)}</b><small>${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}${h.metodo ? " · " + esc(h.metodo) : ""}${h.vet ? " · " + esc(h.vet) : ""}</small>
+          ${(h.cargos || []).length ? `<ul class="pay-det"><li><span>${esc(h.t)}</span><span>${soles(baseDe(h))}</span></li>${h.cargos.map(x => `<li><span>${+x.q > 1 ? x.q + " × " : ""}${esc(x.n)}</span><span>${soles((+x.q || 1) * (+x.p || 0))}</span></li>`).join("")}</ul>` : ""}
+          <button type="button" class="doc-btn" data-doc="rc" data-hi="${m.historial.indexOf(h)}">${icono("shield")} Descargar recibo (PDF)</button></div>
         <div class="amt"><b>${soles(+h.monto || +h.pagado)}</b>${pagoTxt(h.monto || h.pagado, h.pagado)}</div></div>`).join("")}</div>`
       : `<p style="color:var(--muted)">Aún no hay pagos registrados.</p>`;
     $("#vacs").innerHTML = m.vacunas.length ? m.vacunas.slice().sort((a, b) => a.prox - b.prox).map(v => { const n = diff(v.prox);
@@ -695,8 +697,10 @@ if (portal) {
       : `<p style="color:var(--muted)">Aún no hay vacunas registradas.</p>`;
     $("#timeline").innerHTML = m.citas.map(c => `<li class="upcoming"><span class="t-date">${fmt(c.fecha)} · ${esc(c.hora)} h · Programada</span><b>${esc(c.servicio)}</b><span class="vet">${esc(c.vet || "")}</span></li>`).join("") +
       m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}</span><b>${esc(h.t)}</b>${h.d ? `<p><b>Diagnóstico:</b> ${esc(h.d)}</p>` : ""}
-        ${(h.meds || []).length ? `<div class="rx"><b>Receta</b>${h.meds.map(x => `<span>${esc(x.n)}${x.dosis ? " – " + esc(x.dosis) : ""}${x.cada ? ", cada " + esc(x.cada) : ""}${x.dias ? ", por " + esc(x.dias) + " días" : ""}</span>`).join("")}</div>` : ""}
+        ${(h.cargos || []).length ? `<p class="h-used"><b>Usado en la atención:</b> ${h.cargos.map(x => `${+x.q > 1 ? x.q + " × " : ""}${esc(x.n)}`).join(" · ")}</p>` : ""}
+        ${(h.meds || []).length ? `<div class="rx"><b>Receta para la casa</b>${h.meds.map(x => `<span>${esc(x.n)}${x.dosis ? " – " + esc(x.dosis) : ""}${x.cada ? ", cada " + esc(x.cada) : ""}${x.dias ? ", por " + esc(x.dias) + " días" : ""}</span>`).join("")}</div>` : ""}
         ${h.ind ? `<p><b>Indicaciones:</b> ${esc(h.ind)}</p>` : ""}${h.peso || h.temp ? `<p class="vit">${h.peso ? "Peso: " + esc(h.peso) : ""}${h.peso && h.temp ? " · " : ""}${h.temp ? "Temperatura: " + esc(h.temp) : ""}</p>` : ""}
+        ${((h.meds || []).some(x => x.n) || h.ind || +h.monto > 0 || +h.pagado > 0) ? `<div class="doc-row">${(h.meds || []).some(x => x.n) || h.ind ? `<button type="button" class="doc-btn rx-btn" data-doc="rx" data-hi="${m.historial.indexOf(h)}">${icono("pill")} Descargar receta</button>` : ""}${+h.monto > 0 || +h.pagado > 0 ? `<button type="button" class="doc-btn" data-doc="rc" data-hi="${m.historial.indexOf(h)}">${icono("shield")} Recibo</button>` : ""}</div>` : ""}
         ${(h.fotos || []).length ? `<div class="h-fotos" data-fotos="${esc(h.fotos.join(","))}">${h.fotos.map(() => `<span class="ph-load"></span>`).join("")}</div>` : ""}
         ${h.vet ? `<span class="vet">Atendió: ${esc(h.vet)}</span>` : ""}</li>`).join("")
       || `<p style="color:var(--muted)">Aún no hay atenciones registradas.</p>`;
@@ -704,6 +708,32 @@ if (portal) {
     $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(r.i)}</i><b>${esc(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
       : `<p style="color:var(--muted)">Sin recordatorios por ahora.</p>`;
   }
+  // Recibo y receta en PDF (descarga directa)
+  const baseDe = h => h.base != null && h.base !== "" ? +h.base : Math.max((+h.monto || 0) - (h.cargos || []).reduce((a, x) => a + (+x.q || 1) * (+x.p || 0), 0), 0);
+  const isoF = d => d instanceof Date ? `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}` : String(d || "").slice(0, 10);
+  const negocio = () => { const mk = ((DATA && DATA.web) || D0.web || {}).marca || {};
+    return { nombre: NOMBRE, razon: AJ.razonSocial || "", ruc: AJ.ruc || "", dir: AJ.direccion || "", tel: AJ.telefono || "", logo: mk.logo || "", color: mk.color1 || "#5b3df5", pie: AJ.reciboPie || "", web: location.host + location.pathname.replace(/mi-mascota.*$/, "") + "mi-mascota" }; };
+  async function descargar(tipo, h, m) {
+    if (!window.PDFV) return toast("Espera un momento y vuelve a intentar");
+    const f = isoF(h.f);
+    if (tipo === "rc") {
+      const pagos = (h.pagos && h.pagos.length) ? h.pagos : +h.pagado ? [{ monto: +h.pagado, metodo: h.metodo || "", fecha: f }] : [], tot = +h.monto || +h.pagado || 0;
+      return PDFV.recibo({ neg: negocio(), num: PDFV.num("C", f, h.citaId || h.id || h.t + f), fecha: (pagos[pagos.length - 1] || {}).fecha || f, hora: (pagos[pagos.length - 1] || {}).hora || "",
+        cliente: cli.dueño, code, mascota: m.nombre, vet: h.vet, detalle: `Atención del ${fmt(h.f)}${h.hora ? " · " + h.hora + " h" : ""}`,
+        items: [{ n: h.t, q: 1, p: (h.cargos || []).length || h.base != null ? baseDe(h) : tot, principal: true }, ...(h.cargos || []).map(x => ({ n: x.n, q: +x.q || 1, p: +x.p || 0 }))],
+        total: tot, pagos, pagado: +h.pagado || 0, saldo: Math.max(tot - (+h.pagado || 0), 0) });
+    }
+    return PDFV.receta({ neg: negocio(), fecha: f, mascota: { nombre: m.nombre, especie: m.especie, raza: m.raza, peso: h.peso || m.peso, edad: m.nac ? edad(m.nac) : "" }, dueno: cli.dueño, code,
+      vet: h.vet, servicio: h.t, diagnostico: h.d, meds: (h.meds || []).filter(x => x.n), ind: h.ind, control: h.control, controlMotivo: h.controlMotivo });
+  }
+  portal.addEventListener("click", async e => {
+    const b = e.target.closest("[data-doc]"); if (!b) return;
+    const m = cli.mascotas[idx], h = m.historial[+b.dataset.hi]; if (!h) return;
+    const txt = b.innerHTML; b.disabled = true; b.textContent = "Preparando PDF…";
+    try { await descargar(b.dataset.doc, h, m); toast(b.dataset.doc === "rx" ? "Receta descargada" : "Recibo descargado"); }
+    catch (er) { console.error(er); toast(er.message || "No se pudo crear el PDF"); }
+    b.disabled = false; b.innerHTML = txt;
+  });
   // Fotos del historial (radiografías, heridas…): se cargan aparte para que el portal abra rápido
   const FOTOS = {};
   async function leerFoto(id) {

@@ -1211,6 +1211,13 @@ window.DATOS = {
    "v": "Historial, vacunas y recordatorios en Mi Mascota."
   },
   {
+   "k": "sv.nota",
+   "pag": "servicios",
+   "g": "Nota de precios",
+   "l": "Nota debajo de los servicios",
+   "v": "Los precios son de la atención. Los medicamentos y materiales que se usen se cobran aparte, según lo que necesite tu mascota."
+  },
+  {
    "k": "sv.masP",
    "pag": "servicios",
    "g": "Sección «Y además»",
@@ -1335,6 +1342,13 @@ window.DATOS = {
    "g": "Resumen (columna derecha)",
    "l": "Título",
    "v": "Resumen de tu cita"
+  },
+  {
+   "k": "ci.pnota",
+   "pag": "citas",
+   "g": "Resumen (columna derecha)",
+   "l": "Nota del precio",
+   "v": "Precio de la atención. Medicamentos y materiales se cobran aparte, según lo que necesite."
   },
   {
    "k": "ci.note",
