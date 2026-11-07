@@ -852,6 +852,717 @@ window.DATOS = {
    "ausencias": []
   }
  ],
+ "textos": [
+  {
+   "k": "pie.c1",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Título columna 1",
+   "v": "Servicios"
+  },
+  {
+   "k": "pie.c1a",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 1",
+   "v": "Consulta y vacunas"
+  },
+  {
+   "k": "pie.c1b",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 2",
+   "v": "Baño y peluquería"
+  },
+  {
+   "k": "pie.c1c",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 3",
+   "v": "Cirugía y laboratorio"
+  },
+  {
+   "k": "pie.c1d",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 4",
+   "v": "Emergencias 24 h"
+  },
+  {
+   "k": "pie.c2",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Título columna 2",
+   "v": "Clientes"
+  },
+  {
+   "k": "pie.c2a",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 1",
+   "v": "Reservar cita"
+  },
+  {
+   "k": "pie.c2b",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 2",
+   "v": "Mi Mascota (historial)"
+  },
+  {
+   "k": "pie.c2c",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 3",
+   "v": "Pet Shop"
+  },
+  {
+   "k": "pie.c2d",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Enlace 4",
+   "v": "Contacto"
+  },
+  {
+   "k": "pie.c3",
+   "pag": "general",
+   "g": "Columnas del pie",
+   "l": "Título columna 3",
+   "v": "Visítanos"
+  },
+  {
+   "k": "em.btn",
+   "pag": "inicio",
+   "g": "Aviso de emergencias",
+   "l": "Texto del botón",
+   "v": "Emergencia:"
+  },
+  {
+   "k": "cta.b1",
+   "pag": "inicio",
+   "g": "Llamado final",
+   "l": "Botón 1",
+   "v": "Reservar cita"
+  },
+  {
+   "k": "cta.b2",
+   "pag": "inicio",
+   "g": "Llamado final",
+   "l": "Botón 2",
+   "v": "Entrar a Mi Mascota"
+  },
+  {
+   "k": "top.emerg",
+   "pag": "general",
+   "g": "Barra superior",
+   "l": "Texto de emergencias",
+   "v": "Emergencias 24 horas:"
+  },
+  {
+   "k": "nav.cta",
+   "pag": "general",
+   "g": "Menú",
+   "l": "Botón del menú",
+   "v": "Agendar cita"
+  },
+  {
+   "k": "ini.b1",
+   "pag": "inicio",
+   "g": "Portada",
+   "l": "Botón 1",
+   "v": "Reservar cita"
+  },
+  {
+   "k": "ini.b2",
+   "pag": "inicio",
+   "g": "Portada",
+   "l": "Botón 2",
+   "v": "Ver Mi Mascota"
+  },
+  {
+   "k": "ini.f1t",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 1 · título",
+   "v": "Recordatorio"
+  },
+  {
+   "k": "ini.f1s",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 1 · texto",
+   "v": "Rocky: vacuna en 2 días"
+  },
+  {
+   "k": "ini.f2t",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 2 · título",
+   "v": "Cita confirmada"
+  },
+  {
+   "k": "ini.f2s",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 2 · texto",
+   "v": "Sáb · 10:30 h · Baño"
+  },
+  {
+   "k": "ini.f3t",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 3 · título",
+   "v": "Pedido en camino"
+  },
+  {
+   "k": "ini.f3s",
+   "pag": "inicio",
+   "g": "Tarjetas sobre la foto",
+   "l": "Tarjeta 3 · texto",
+   "v": "Alimento 15 kg"
+  },
+  {
+   "k": "ini.a1t",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 1 · título",
+   "v": "Reservar cita"
+  },
+  {
+   "k": "ini.a1s",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 1 · texto",
+   "v": "Elige día y hora libre"
+  },
+  {
+   "k": "ini.a2t",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 2 · título",
+   "v": "Mi Mascota"
+  },
+  {
+   "k": "ini.a2s",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 2 · texto",
+   "v": "Historial con tu código"
+  },
+  {
+   "k": "ini.a3t",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 3 · título",
+   "v": "Pet Shop"
+  },
+  {
+   "k": "ini.a3s",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 3 · texto",
+   "v": "Delivery a tu casa"
+  },
+  {
+   "k": "ini.a4t",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 4 · título",
+   "v": "Emergencias"
+  },
+  {
+   "k": "ini.a4s",
+   "pag": "inicio",
+   "g": "Accesos rápidos",
+   "l": "Acceso 4 · texto",
+   "v": "Atención 24 horas"
+  },
+  {
+   "k": "ini.svbtn",
+   "pag": "inicio",
+   "g": "Servicios",
+   "l": "Texto del botón",
+   "v": "Ver todos los servicios"
+  },
+  {
+   "k": "ini.p1t",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 1 · título",
+   "v": "¿A qué hora le toca?"
+  },
+  {
+   "k": "ini.p1s",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 1 · texto",
+   "v": "Ve su próxima cita con cuenta regresiva y confírmala con un toque."
+  },
+  {
+   "k": "ini.p2t",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 2 · título",
+   "v": "Carnet de vacunas digital"
+  },
+  {
+   "k": "ini.p2s",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 2 · texto",
+   "v": "Sabrás qué vacuna está al día, cuál vence pronto y cuál falta."
+  },
+  {
+   "k": "ini.p3t",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 3 · título",
+   "v": "Historial de citas"
+  },
+  {
+   "k": "ini.p3s",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 3 · texto",
+   "v": "Consultas, tratamientos, cirugías y baños con fecha y veterinario."
+  },
+  {
+   "k": "ini.p4t",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 4 · título",
+   "v": "Recordatorios"
+  },
+  {
+   "k": "ini.p4s",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Punto 4 · texto",
+   "v": "Desparasitación, baños y recompra de alimento."
+  },
+  {
+   "k": "ini.pbtn",
+   "pag": "inicio",
+   "g": "Portal Mi Mascota",
+   "l": "Texto del botón",
+   "v": "Probar con un código demo"
+  },
+  {
+   "k": "ini.tibtn",
+   "pag": "inicio",
+   "g": "Productos destacados",
+   "l": "Texto del botón",
+   "v": "Ir a la tienda"
+  },
+  {
+   "k": "ini.s1t",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 1 · título",
+   "v": "Elige el servicio"
+  },
+  {
+   "k": "ini.s1s",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 1 · texto",
+   "v": "Consulta, vacuna, baño, cirugía o lo que necesite."
+  },
+  {
+   "k": "ini.s2t",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 2 · título",
+   "v": "Escoge día y hora"
+  },
+  {
+   "k": "ini.s2s",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 2 · texto",
+   "v": "Ves solo los horarios libres, sin llamar."
+  },
+  {
+   "k": "ini.s3t",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 3 · título",
+   "v": "Queda confirmada"
+  },
+  {
+   "k": "ini.s3s",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 3 · texto",
+   "v": "Al instante, y te avisamos por WhatsApp."
+  },
+  {
+   "k": "ini.s4t",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 4 · título",
+   "v": "Sigue todo con tu código"
+  },
+  {
+   "k": "ini.s4s",
+   "pag": "inicio",
+   "g": "Cómo reservar (pasos)",
+   "l": "Paso 4 · texto",
+   "v": "Historial, vacunas y recordatorios en Mi Mascota."
+  },
+  {
+   "k": "sv.masP",
+   "pag": "servicios",
+   "g": "Sección «Y además»",
+   "l": "Etiqueta",
+   "v": "Y además"
+  },
+  {
+   "k": "sv.masT",
+   "pag": "servicios",
+   "g": "Sección «Y además»",
+   "l": "Título",
+   "v": "Más servicios para"
+  },
+  {
+   "k": "sv.masC",
+   "pag": "servicios",
+   "g": "Sección «Y además»",
+   "l": "Continuación (en color)",
+   "v": "cada etapa"
+  },
+  {
+   "k": "ti.k1t",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 1 · título",
+   "v": "Delivery en Lima"
+  },
+  {
+   "k": "ti.k1s",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 1 · texto",
+   "v": "Gratis desde S/ 150"
+  },
+  {
+   "k": "ti.k2t",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 2 · título",
+   "v": "Productos originales"
+  },
+  {
+   "k": "ti.k2s",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 2 · texto",
+   "v": "Con registro SENASA"
+  },
+  {
+   "k": "ti.k3t",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 3 · título",
+   "v": "Asesoría veterinaria"
+  },
+  {
+   "k": "ti.k3s",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 3 · texto",
+   "v": "Te ayudamos a elegir"
+  },
+  {
+   "k": "ti.k4t",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 4 · título",
+   "v": "Paga como quieras"
+  },
+  {
+   "k": "ti.k4s",
+   "pag": "tienda",
+   "g": "Ventajas (debajo de los productos)",
+   "l": "Ventaja 4 · texto",
+   "v": "Yape, Plin, tarjeta o efectivo"
+  },
+  {
+   "k": "ci.l1",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Paso 1",
+   "v": "1. ¿Qué servicio necesita? *"
+  },
+  {
+   "k": "ci.l2",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Paso 2",
+   "v": "2. Tu mascota *"
+  },
+  {
+   "k": "ci.dir",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Título de la dirección (servicios a domicilio)",
+   "v": "¿Dónde atendemos a tu mascota? *"
+  },
+  {
+   "k": "ci.l3",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Paso 3",
+   "v": "3. Elige el día y la hora *"
+  },
+  {
+   "k": "ci.l4",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Paso 4",
+   "v": "4. Tus datos *"
+  },
+  {
+   "k": "ci.btn",
+   "pag": "citas",
+   "g": "Formulario",
+   "l": "Botón de confirmar",
+   "v": "Confirmar mi cita"
+  },
+  {
+   "k": "ci.sumT",
+   "pag": "citas",
+   "g": "Resumen (columna derecha)",
+   "l": "Título",
+   "v": "Resumen de tu cita"
+  },
+  {
+   "k": "ci.note",
+   "pag": "citas",
+   "g": "Resumen (columna derecha)",
+   "l": "Nota",
+   "v": "Tu cita queda confirmada al instante. Te enviaremos un recordatorio por WhatsApp. Llega 10 minutos antes con el carnet de tu mascota."
+  },
+  {
+   "k": "ci.codeBtn",
+   "pag": "citas",
+   "g": "Resumen (columna derecha)",
+   "l": "Botón inferior",
+   "v": "¿Ya tienes código? Ver tus citas"
+  },
+  {
+   "k": "mm.pill",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Etiqueta",
+   "v": "Portal de clientes"
+  },
+  {
+   "k": "mm.t1",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Título",
+   "v": "Mi"
+  },
+  {
+   "k": "mm.t2",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Título (en color)",
+   "v": "Mascota"
+  },
+  {
+   "k": "mm.txt",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Texto",
+   "v": "Ingresa tu código de cliente para ver a qué hora le toca su próxima cita, su carnet de vacunas y todo su historial."
+  },
+  {
+   "k": "mm.btn",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Botón",
+   "v": "Entrar"
+  },
+  {
+   "k": "mm.help",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Ayuda",
+   "v": "¿No tienes código? Te lo damos en tu primera visita o"
+  },
+  {
+   "k": "mm.helpL",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Enlace de ayuda",
+   "v": "pídelo por WhatsApp"
+  },
+  {
+   "k": "mm.c1",
+   "pag": "mi-mascota",
+   "g": "Panel del cliente (títulos)",
+   "l": "Próximas citas",
+   "v": "Próximas citas"
+  },
+  {
+   "k": "mm.c2",
+   "pag": "mi-mascota",
+   "g": "Panel del cliente (títulos)",
+   "l": "Servicios y pagos",
+   "v": "Servicios y pagos"
+  },
+  {
+   "k": "mm.c3",
+   "pag": "mi-mascota",
+   "g": "Panel del cliente (títulos)",
+   "l": "Carnet de vacunas",
+   "v": "Carnet de vacunas"
+  },
+  {
+   "k": "mm.c4",
+   "pag": "mi-mascota",
+   "g": "Panel del cliente (títulos)",
+   "l": "Recordatorios",
+   "v": "Recordatorios"
+  },
+  {
+   "k": "mm.c5",
+   "pag": "mi-mascota",
+   "g": "Panel del cliente (títulos)",
+   "l": "Historial",
+   "v": "Historial de citas"
+  },
+  {
+   "k": "no.pill",
+   "pag": "nosotros",
+   "g": "Historia",
+   "l": "Etiqueta",
+   "v": "Nuestra historia"
+  },
+  {
+   "k": "no.btn",
+   "pag": "nosotros",
+   "g": "Historia",
+   "l": "Texto del botón",
+   "v": "Reservar una cita"
+  },
+  {
+   "k": "no.eqP",
+   "pag": "nosotros",
+   "g": "Equipo",
+   "l": "Etiqueta",
+   "v": "Equipo"
+  },
+  {
+   "k": "no.eqT",
+   "pag": "nosotros",
+   "g": "Equipo",
+   "l": "Título",
+   "v": "Conoce a"
+  },
+  {
+   "k": "no.eqC",
+   "pag": "nosotros",
+   "g": "Equipo",
+   "l": "Título (en color)",
+   "v": "nuestro equipo"
+  },
+  {
+   "k": "co.dir",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Dirección",
+   "v": "Dirección"
+  },
+  {
+   "k": "co.tel",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Teléfono",
+   "v": "WhatsApp y teléfono"
+  },
+  {
+   "k": "co.mail",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Correo",
+   "v": "Correo"
+  },
+  {
+   "k": "co.hor",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Horarios",
+   "v": "Horarios"
+  },
+  {
+   "k": "co.ls",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Días de semana",
+   "v": "Lunes a sábado"
+  },
+  {
+   "k": "co.dom",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Domingo",
+   "v": "Domingos"
+  },
+  {
+   "k": "co.em",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Emergencias",
+   "v": "Emergencias"
+  },
+  {
+   "k": "co.em24",
+   "pag": "contacto",
+   "g": "Títulos de los datos",
+   "l": "Horario de emergencias",
+   "v": "24 horas"
+  },
+  {
+   "k": "co.fT",
+   "pag": "contacto",
+   "g": "Formulario",
+   "l": "Título",
+   "v": "Escríbenos"
+  },
+  {
+   "k": "co.fP",
+   "pag": "contacto",
+   "g": "Formulario",
+   "l": "Texto",
+   "v": "Te respondemos por WhatsApp en minutos."
+  },
+  {
+   "k": "co.btn",
+   "pag": "contacto",
+   "g": "Formulario",
+   "l": "Botón",
+   "v": "Enviar por WhatsApp"
+  }
+ ],
+ "imagenesFijas": [
+  {
+   "k": "cta",
+   "pag": "inicio",
+   "g": "Llamado final",
+   "l": "Imagen del llamado final",
+   "src": "https://images.unsplash.com/photo-1654895716780-b4664497420d?auto=format&fit=crop&w=700&q=80"
+  },
+  {
+   "k": "mm.img",
+   "pag": "mi-mascota",
+   "g": "Ingreso con código",
+   "l": "Imagen del ingreso",
+   "src": "https://images.unsplash.com/photo-1563460716037-460a3ad24ba9?auto=format&fit=crop&w=900&q=80"
+  }
+ ],
  "iconos": {
   "steth": "<path d=\"M6 3v6a6 6 0 0 0 12 0V3M12 15v2a4 4 0 0 0 8 0v-3\"/><circle cx=\"20\" cy=\"12\" r=\"2\"/>",
   "syringe": "<path d=\"M18 2l4 4M17 7l3-3M19 9L8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6\"/>",

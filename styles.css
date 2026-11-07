@@ -658,3 +658,22 @@ a.prod-img { display: grid; }
 .timeline .rx span::before { content: "• "; color: var(--pri); font-weight: 800; }
 .timeline p b { color: var(--ink); }
 .timeline .vit { font-size: .82rem; }
+
+/* ===== Encabezado con imagen de fondo (editable desde el panel) ===== */
+.page-head.has-img { position: relative; background: linear-gradient(180deg, rgba(23,18,52,.62), rgba(23,18,52,.74)), var(--ph-img) center/cover no-repeat; color: #fff; border-bottom: 0; padding: 96px 0 84px; }
+.page-head.has-img h1, .page-head.has-img h1 .c-pri { color: #fff; }
+.page-head.has-img p { color: rgba(255,255,255,.88); }
+.page-head.has-img .pill { background: rgba(255,255,255,.16); color: #fff; border-color: rgba(255,255,255,.25); }
+/* ===== Bloques agregados en cualquier página ===== */
+.pg-bloques { padding: 70px 0; }
+.pg-bloques .bloques { margin: 0 auto; }
+/* ===== Fotos del historial (Mi Mascota) ===== */
+.h-fotos { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+.h-foto { width: 76px; height: 76px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); padding: 0; cursor: zoom-in; background: var(--soft, #f4f2fb); }
+.h-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph-load { width: 76px; height: 76px; border-radius: 12px; background: linear-gradient(90deg, #f1eef9, #e6e1f6, #f1eef9); background-size: 200% 100%; animation: phl 1.2s infinite; }
+@keyframes phl { to { background-position: -200% 0; } }
+.lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(15,12,35,.9); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
+.lightbox img { max-width: 100%; max-height: 88vh; border-radius: 14px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.6); }
+.lightbox button { position: absolute; top: 16px; right: 18px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 1.6rem; cursor: pointer; }
+@media print { .h-foto { width: 60px; height: 60px; } }

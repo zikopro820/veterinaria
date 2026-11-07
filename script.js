@@ -15,7 +15,8 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const soles = n => "S/ " + (+n).toFixed(2);
 const precio = n => !+n ? "Consultar" : "S/ " + (Number.isInteger(+n) ? +n : (+n).toFixed(2));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const foto = (img, w = 600) => !img ? "" : (img.startsWith("http") || img.startsWith("data:")) ? img : `https://images.unsplash.com/photo-${img}?auto=format&fit=crop&w=${w}&q=80`;
+const MEDIA = {};   // imágenes subidas desde el panel (m:ID → imagen)
+const foto = (img, w = 600) => !img ? "" : img.startsWith("m:") ? (MEDIA[img.slice(2)] || "") : (img.startsWith("http") || img.startsWith("data:")) ? img : `https://images.unsplash.com/photo-${img}?auto=format&fit=crop&w=${w}&q=80`;
 const wa = txt => window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(txt), "_blank");
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } },
@@ -70,7 +71,7 @@ async function cargarDatos() {
   try {
     if (EN_VIVO) {
       let cache = null; try { cache = JSON.parse(sessionStorage.getItem("hv_cache")); } catch (e) {}
-      if (cache && cache.v === 4 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web, cats, pags, docs } = cache);
+      if (cache && cache.v === 5 && Date.now() - cache.t < 3 * 60 * 1000) ({ prod, serv, aj, web, cats, pags, docs } = cache);
       else {
         const { fs, db } = await fb();
         const [p, s, a, w, c, g, dr] = await Promise.all([fs.getDocs(fs.collection(db, "productos")), fs.getDocs(fs.collection(db, "servicios")),
@@ -78,7 +79,7 @@ async function cargarDatos() {
         cats = c.exists() ? c.data() : null; pags = g.exists() ? g.data() : null; docs = dr.exists() ? dr.data().lista : null;
         prod = p.docs.map(d => ({ ...d.data(), id: d.id })); serv = s.docs.map(d => ({ ...d.data(), id: d.id }));
         aj = a.exists() ? a.data() : null; web = w.exists() ? w.data() : null;
-        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 4, t: Date.now(), prod, serv, aj, web, cats, pags, docs })); } catch (e) {}
+        try { sessionStorage.setItem("hv_cache", JSON.stringify({ v: 5, t: Date.now(), prod, serv, aj, web, cats, pags, docs })); } catch (e) {}
       }
     } else {
       const local = localDB();
@@ -90,6 +91,7 @@ async function cargarDatos() {
       }
     }
   } catch (e) { console.warn("No se pudieron leer los datos; se usan los de ejemplo.", e); }
+  await cargarMedios([web, pags]);
   DATA = {
     productos: ordenar(prod && prod.length ? prod : D0.productos).filter(x => x.visible !== false),
     servicios: ordenar(serv && serv.length ? serv : D0.servicios).filter(x => x.visible !== false),
@@ -100,6 +102,23 @@ async function cargarDatos() {
     doctores: docs || D0.doctores || [],
   };
   return DATA;
+}
+
+// Imágenes guardadas aparte (encabezados, bloques, portada…): se leen todas antes de pintar
+async function cargarMedios(objs) {
+  const ids = [...new Set((JSON.stringify(objs).match(/"m:[A-Za-z0-9_-]+"/g) || []).map(x => x.slice(3, -1)))].filter(id => !MEDIA[id]);
+  if (!ids.length) return;
+  try {
+    if (EN_VIVO) {
+      let c = {}; try { c = JSON.parse(sessionStorage.getItem("hv_media") || "{}"); } catch (e) {}
+      const faltan = ids.filter(id => !c[id]);
+      if (faltan.length) { const { fs, db } = await fb();
+        const r = await Promise.all(faltan.map(id => fs.getDoc(fs.doc(db, "medios", id)).catch(() => null)));
+        r.forEach((d, i) => { if (d && d.exists()) c[faltan[i]] = d.data().data; });
+        try { sessionStorage.setItem("hv_media", JSON.stringify(c)); } catch (e) {} }
+      ids.forEach(id => { if (c[id]) MEDIA[id] = c[id]; });
+    } else { const m = (localDB() || {}).medios || {}; ids.forEach(id => { if (m[id]) MEDIA[id] = m[id].data || m[id]; }); }
+  } catch (e) { console.warn("No se pudieron leer las imágenes", e); }
 }
 
 /* ---------- Categorías (Pet Shop y servicios) ---------- */
@@ -678,11 +697,34 @@ if (portal) {
       m.historial.map(h => `<li><span class="t-date">${fmt(h.f)}${h.hora ? " · " + esc(h.hora) + " h" : ""}</span><b>${esc(h.t)}</b>${h.d ? `<p><b>Diagnóstico:</b> ${esc(h.d)}</p>` : ""}
         ${(h.meds || []).length ? `<div class="rx"><b>Receta</b>${h.meds.map(x => `<span>${esc(x.n)}${x.dosis ? " – " + esc(x.dosis) : ""}${x.cada ? ", cada " + esc(x.cada) : ""}${x.dias ? ", por " + esc(x.dias) + " días" : ""}</span>`).join("")}</div>` : ""}
         ${h.ind ? `<p><b>Indicaciones:</b> ${esc(h.ind)}</p>` : ""}${h.peso || h.temp ? `<p class="vit">${h.peso ? "Peso: " + esc(h.peso) : ""}${h.peso && h.temp ? " · " : ""}${h.temp ? "Temperatura: " + esc(h.temp) : ""}</p>` : ""}
+        ${(h.fotos || []).length ? `<div class="h-fotos" data-fotos="${esc(h.fotos.join(","))}">${h.fotos.map(() => `<span class="ph-load"></span>`).join("")}</div>` : ""}
         ${h.vet ? `<span class="vet">Atendió: ${esc(h.vet)}</span>` : ""}</li>`).join("")
       || `<p style="color:var(--muted)">Aún no hay atenciones registradas.</p>`;
+    cargarFotos();
     $("#rems").innerHTML = m.rec.length ? m.rec.map(r => `<div class="rem"><i>${ic(r.i)}</i><b>${esc(r.t)}</b><small>${enDias(diff(r.f))} · ${fmt(r.f)}</small></div>`).join("")
       : `<p style="color:var(--muted)">Sin recordatorios por ahora.</p>`;
   }
+  // Fotos del historial (radiografías, heridas…): se cargan aparte para que el portal abra rápido
+  const FOTOS = {};
+  async function leerFoto(id) {
+    if (FOTOS[id] !== undefined) return FOTOS[id];
+    try {
+      if (EN_VIVO) { const { fs, db } = await fb(); const d = await fs.getDoc(fs.doc(db, "clientes", code, "fotos", id)); FOTOS[id] = d.exists() ? d.data().data : null; }
+      else FOTOS[id] = ((((localDB() || {}).fotos || {})[code] || {})[id] || {}).data || null;
+    } catch (e) { FOTOS[id] = null; }
+    return FOTOS[id];
+  }
+  async function cargarFotos() {
+    for (const box of $$("#timeline [data-fotos]")) {
+      const ids = box.dataset.fotos.split(",").filter(Boolean), src = await Promise.all(ids.map(leerFoto));
+      box.innerHTML = src.filter(Boolean).map(x => `<button type="button" class="h-foto" data-zoom><img src="${x}" alt="Foto de la atención"></button>`).join("");
+      if (!box.innerHTML) box.remove();
+    }
+  }
+  document.addEventListener("click", e => {
+    const z = e.target.closest("[data-zoom]");
+    if (z) { const lb = document.createElement("div"); lb.className = "lightbox"; lb.innerHTML = `<img src="${z.querySelector("img").src}" alt=""><button aria-label="Cerrar">×</button>`; document.body.appendChild(lb); lb.addEventListener("click", () => lb.remove()); }
+  });
   portal.addEventListener("click", e => {
     const t = e.target.closest("[data-i]"); if (t) { idx = +t.dataset.i; render(); }
     const a = e.target.closest("[data-act]"); if (!a) return;
@@ -740,9 +782,25 @@ function aplicarPaginas(pg) {
     const ocultas = pg.menu.filter(m => m.visible === false).map(m => m.id);
     $$("footer a").forEach(a => { const h = (a.getAttribute("href") || "").split("?")[0]; if (ocultas.includes(h)) a.closest("li") ? a.closest("li").style.display = "none" : a.style.display = "none"; });
   }
-  // Encabezado de cada página
-  const enc = (pg.encabezados || {})[PAG_KEY];
-  if (enc) setHead($("[data-ph]"), enc);
+  // Encabezado de cada página (con imagen de fondo opcional)
+  const enc = (pg.encabezados || {})[PAG_KEY], ph = $("[data-ph]");
+  if (enc) setHead(ph, enc);
+  if (ph && enc && enc.img && foto(enc.img)) { ph.classList.add("has-img"); ph.style.setProperty("--ph-img", `url("${foto(enc.img, 1600)}")`); }
+  // Textos sueltos de cada página
+  const TX = pg.textos || {};
+  $$("[data-t]").forEach(el => { const v = TX[el.dataset.t]; if (v != null && v !== "") el.textContent = v; });
+  // Imágenes fijas (llamado final, ingreso a Mi Mascota…)
+  const IMG = pg.imagenes || {};
+  $$("[data-ik]").forEach(el => { const v = IMG[el.dataset.ik]; if (v && foto(v)) el.src = foto(v, 900); });
+  // Secciones compartidas (aviso de emergencias, testimonios y llamado final) en todas las páginas
+  (pg.inicio || []).forEach(sx => {
+    if (!["emergencias", "cta", "testimonios"].includes(sx.id)) return;
+    $$(sx.id === "emergencias" ? ".emergency" : sx.id === "cta" ? ".cta" : '[data-sec="testimonios"] .sec-head').forEach(box => {
+      if (sx.id === "testimonios") return setHead(box, sx);
+      const h = $(sx.id === "cta" ? "h2" : "h3", box), p = $("p", box);
+      if (h && sx.titulo) h.textContent = sx.titulo; if (p && sx.texto != null) p.textContent = sx.texto;
+    });
+  });
   // Secciones del inicio: textos, mostrar/ocultar y orden
   if (PAG_KEY === "inicio" && pg.inicio) {
     const foot = $("footer");
@@ -760,6 +818,21 @@ function aplicarPaginas(pg) {
   }
   // Pie de página
   if (pg.pie && pg.pie.texto && $("#pieTexto")) $("#pieTexto").textContent = pg.pie.texto;
+  // Bloques agregados por el cliente en esta página
+  const bl = ((pg.bloques || {})[PAG_KEY] || []).filter(b => b.visible !== false && (b.titulo || b.texto || b.img));
+  const cont = $("#pgBloques");
+  if (cont) {
+    cont.innerHTML = bl.length ? `<section class="pg-bloques"><div class="container bloques">${bl.map((b, i) => bloqueHTML(b, i)).join("")}</div></section>` : "";
+    const f = $("footer"); if (f) f.parentNode.insertBefore(cont, f);
+    revealAll(cont);
+  }
+}
+function bloqueHTML(b, i) {
+  return `<article class="bloque reveal ${b.img ? "con-img" : ""} ${i % 2 ? "alt" : ""}">
+    ${b.img && foto(b.img) ? `<div class="b-img"><img src="${esc(foto(b.img, 900))}" alt="" loading="lazy"></div>` : ""}
+    <div class="b-txt">${b.titulo ? `<h2>${esc(b.titulo)}</h2>` : ""}${String(b.texto || "").split(/\n+/).filter(Boolean).map(t => `<p>${esc(t)}</p>`).join("")}
+      ${b.boton && b.enlace ? `<a class="btn btn-pri" href="${esc(b.enlace)}">${esc(b.boton)} ${ICO.arrow}</a>` : ""}</div>
+  </article>`;
 }
 
 /* =========================================================
@@ -835,12 +908,7 @@ function paginaLibre(pg) {
   if (!x) { box.innerHTML = `<section class="page-head"><div class="container"><h1>Página no encontrada</h1><p>Puede que haya sido eliminada.</p><div class="hero-actions" style="justify-content:center"><a class="btn btn-pri" href="./">Ir al inicio</a></div></div></section>`; return; }
   document.title = `${x.n} | ${NOMBRE}`;
   box.innerHTML = `<section class="page-head"><div class="container">${x.pill ? `<span class="pill">${icono("sparkle")} ${esc(x.pill)}</span>` : ""}<h1>${esc(x.titulo || x.n)}${x.tituloColor ? ` <span class="c-pri">${esc(x.tituloColor)}</span>` : ""}</h1>${x.texto ? `<p>${esc(x.texto)}</p>` : ""}</div></section>
-    <section><div class="container bloques">${(x.bloques || []).map((b, i) => `
-      <article class="bloque reveal ${b.img ? "con-img" : ""} ${i % 2 ? "alt" : ""}">
-        ${b.img ? `<div class="b-img"><img src="${esc(foto(b.img, 900))}" alt="" loading="lazy"></div>` : ""}
-        <div class="b-txt">${b.titulo ? `<h2>${esc(b.titulo)}</h2>` : ""}${String(b.texto || "").split(/\n+/).filter(Boolean).map(t => `<p>${esc(t)}</p>`).join("")}
-          ${b.boton && b.enlace ? `<a class="btn btn-pri" href="${esc(b.enlace)}">${esc(b.boton)} ${ICO.arrow}</a>` : ""}</div>
-      </article>`).join("")}</div></section>`;
+    <section><div class="container bloques">${(x.bloques || []).map(bloqueHTML).join("")}</div></section>`;
   revealAll(box);
 }
 
